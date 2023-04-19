@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "SubtitleDubber": {
+      "commandName": "Project",
+      "commandLineArgs": "--i C:\\Users\\vytau\\Downloads\\the.last.of.us.s01.e01.when.youre.lost.in.the.darkness.(2023).lit.1cd.(9396940)\\The.Last.of.Us.S01E01.Episode.1.1080p.HMAX.WEB-DL.DDP5.1.Atmos.H.264-SMURF.srt --o C:\\hardas\\projects\\SubtitleDubber\\SubtitleDubber\\output"
+    }
+  }
+}
