@@ -15,6 +15,10 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebView" Version="7.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\SubtitleDubber\SubtitleDubber.csproj" />
+  </ItemGroup>
+
   
   <ItemGroup>
     <SupportedPlatform Include="browser" />

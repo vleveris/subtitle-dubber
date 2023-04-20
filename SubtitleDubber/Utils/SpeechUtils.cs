@@ -3,9 +3,9 @@ using System.Speech.AudioFormat;
 
 namespace SubtitleDubber.Utils
 {
-    class SpeechUtils
+    public class SpeechUtils
     {
-        private SpeechSynthesizer _synthesizer;
+        private static SpeechSynthesizer _synthesizer;
         private SpeechAudioFormatInfo _synthFormat;
 
         public SpeechUtils()
@@ -15,15 +15,28 @@ _synthFormat = new (44100, AudioBitsPerSample.Sixteen, AudioChannel.Stereo);
 
         }
 
-        public void SpeakToFile(string text, string fileName)
+        public List<VoiceInfo> GetInstalledVoices()
         {
-            /*            foreach (var voice in synthesizer.GetInstalledVoices())
+            List<VoiceInfo> voices = new List<VoiceInfo>();
+                         foreach (var voice in _synthesizer.GetInstalledVoices())
                         {
                             var info = voice.VoiceInfo;
-                            Console.WriteLine($"Id: {info.Id} | Name: {info.Name} |                               Age: { info.Age} | Gender: { info.Gender} | Culture: { info.Culture}                ");
+                voices.Add(info);
              }
-            */
-            _synthesizer.SelectVoice("Regina");
+            return voices;
+        }
+
+        public VoiceInfo GetVoice()
+        {
+            return _synthesizer.Voice;
+        }
+
+        public void SetVoice(string name)
+        {
+            _synthesizer.SelectVoice(name);
+                    }
+        public void SpeakToFile(string text, string fileName)
+        {
                 _synthesizer.SetOutputToWaveFile(fileName, _synthFormat);
             try
             {
