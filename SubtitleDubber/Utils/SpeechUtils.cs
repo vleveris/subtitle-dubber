@@ -35,6 +35,15 @@ _synthFormat = new (44100, AudioBitsPerSample.Sixteen, AudioChannel.Stereo);
         {
             _synthesizer.SelectVoice(name);
                     }
+
+public void Speak(string text)
+        {
+            _synthesizer.Pause();
+            _synthesizer.SpeakAsyncCancelAll();
+            _synthesizer.Resume();
+            _synthesizer.SpeakAsync(text);
+        }
+
         public void SpeakToFile(string text, string fileName)
         {
                 _synthesizer.SetOutputToWaveFile(fileName, _synthFormat);
