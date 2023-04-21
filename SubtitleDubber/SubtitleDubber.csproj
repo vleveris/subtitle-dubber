@@ -9,10 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.9.1" />
-    <PackageReference Include="NAudio" Version="2.1.0" />
     <PackageReference Include="System.Speech" Version="7.0.0" />
-    <PackageReference Include="taglib-sharp-netstandard2.0" Version="2.1.0" />
-    <PackageReference Include="WindowsAPICodePack-Shell" Version="1.1.1" />
   </ItemGroup>
 
 </Project>

@@ -1,5 +1,6 @@
 ﻿using System.Speech.Synthesis;
 using System.Speech.AudioFormat;
+using System.Security.Principal;
 
 namespace SubtitleDubber.Utils
 {
@@ -72,5 +73,16 @@ public void IncreaseRate()
         {
             return _synthesizer.Rate;
         }
+
+        public void SetRate(int rate)
+        {
+                _synthesizer.Rate = rate;
+        }
+
+        public void SetVolume(int volume)
+        {
+            _synthesizer.Volume = volume;
+        }
+
     }
 }

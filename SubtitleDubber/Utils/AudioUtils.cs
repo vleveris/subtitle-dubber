@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using SubtitleDubber.Models;
 using SubtitleDubber.Helpers;
-using NAudio.Wave;
 using System.Diagnostics;
 
 namespace SubtitleDubber.Utils

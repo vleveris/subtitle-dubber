@@ -18,7 +18,7 @@ namespace Web
         public ExampleJsInterop(IJSRuntime jsRuntime)
         {
             moduleTask = new(() => jsRuntime.InvokeAsync<IJSObjectReference>(
-               "import", "./_content/Web/exampleJsInterop.js").AsTask());
+               "import", "./_content/Web/script/exampleJsInterop.js").AsTask());
         }
 
         public async ValueTask<string> Prompt(string message)
