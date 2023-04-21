@@ -4,19 +4,12 @@ using System.Security.Principal;
 
 namespace SubtitleDubber.Utils
 {
-    public class SpeechUtils
+    public static class SpeechUtils
     {
-        private static SpeechSynthesizer _synthesizer;
-        private SpeechAudioFormatInfo _synthFormat;
+        private static SpeechSynthesizer _synthesizer = new();
+        private static SpeechAudioFormatInfo _synthFormat = new(44100, AudioBitsPerSample.Sixteen, AudioChannel.Stereo);
 
-        public SpeechUtils()
-        {
-            _synthesizer = new SpeechSynthesizer();
-_synthFormat = new (44100, AudioBitsPerSample.Sixteen, AudioChannel.Stereo);
-
-        }
-
-        public List<VoiceInfo> GetInstalledVoices()
+        public static List<VoiceInfo> GetInstalledVoices()
         {
             List<VoiceInfo> voices = new List<VoiceInfo>();
                          foreach (var voice in _synthesizer.GetInstalledVoices())
@@ -27,17 +20,17 @@ _synthFormat = new (44100, AudioBitsPerSample.Sixteen, AudioChannel.Stereo);
             return voices;
         }
 
-        public VoiceInfo GetVoice()
+        public static VoiceInfo GetVoice()
         {
             return _synthesizer.Voice;
         }
 
-        public void SetVoice(string name)
+        public static void SetVoice(string name)
         {
             _synthesizer.SelectVoice(name);
                     }
 
-public void Speak(string text)
+public static void Speak(string text)
         {
             _synthesizer.Pause();
             _synthesizer.SpeakAsyncCancelAll();
@@ -45,7 +38,7 @@ public void Speak(string text)
             _synthesizer.SpeakAsync(text);
         }
 
-        public void SpeakToFile(string text, string fileName)
+        public static void SpeakToFile(string text, string fileName)
         {
                 _synthesizer.SetOutputToWaveFile(fileName, _synthFormat);
             try
@@ -59,27 +52,27 @@ public void Speak(string text)
             _synthesizer.SetOutputToNull();
         }
 
-public void IncreaseRate()
+public static void IncreaseRate()
         {
             ++_synthesizer.Rate;
         }
 
-        public void SetRateToDefault()
+        public static void SetRateToDefault()
         {
             _synthesizer.Rate = 0;
         }
 
-        public int GetRate()
+        public static int GetRate()
         {
             return _synthesizer.Rate;
         }
 
-        public void SetRate(int rate)
+        public static void SetRate(int rate)
         {
                 _synthesizer.Rate = rate;
         }
 
-        public void SetVolume(int volume)
+        public static void SetVolume(int volume)
         {
             _synthesizer.Volume = volume;
         }

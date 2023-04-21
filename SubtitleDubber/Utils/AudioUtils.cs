@@ -11,12 +11,6 @@ namespace SubtitleDubber.Utils
 {
     internal class AudioUtils
     {
-        private SpeechUtils _speech;
-        public AudioUtils()
-        {
-            _speech = new SpeechUtils();
-        }
-
         private long GetFileDuration(string fileName)
         {
             FileInfo fileInfo = new FileInfo(fileName);
@@ -148,27 +142,26 @@ if (msRemainder<10)
             var validDuration = true;
             do
             {
-                _speech.SpeakToFile(text, outputFile);
+                SpeechUtils.SpeakToFile(text, outputFile);
                 long fileDuration = GetFileDuration(outputFile);
                 if (fileDuration > duration)
                 {
                     validDuration = false;
-                    if (_speech.GetRate() == 10)
+                    if (SpeechUtils.GetRate() == 10)
                     {
-                        _speech.SetRateToDefault();
+                        SpeechUtils.SetRateToDefault();
                         text = text.RemovePunctuation().Shorten();
 
                     }
                     else
                     {
-                    _speech.IncreaseRate();
+                    SpeechUtils.IncreaseRate();
                     }
-
                 }
                 else if (!validDuration)
                 {
                     validDuration = true;
-                    _speech.SetRateToDefault();
+                    SpeechUtils.SetRateToDefault();
                 }
             }
             while (!validDuration);

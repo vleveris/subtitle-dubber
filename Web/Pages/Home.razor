@@ -56,7 +56,6 @@ if (key != "Name" && key != "Gender" && key != "Age" && key != "Language")
 </div>
 @code {
     List<VoiceInfo> _voices = new List<VoiceInfo>();
-    SpeechUtils _speechUtils = new();
     string _selectedVoiceName;
     string _text = string.Empty;
     int _speed = 50, _volume=100;
@@ -64,8 +63,8 @@ if (key != "Name" && key != "Gender" && key != "Age" && key != "Language")
     string _audioFormats;
     protected override async Task OnInitializedAsync()
     {
-        _voices = _speechUtils.GetInstalledVoices();
-        _selectedVoiceName = _speechUtils.GetVoice().Name;
+        _voices = SpeechUtils.GetInstalledVoices();
+        _selectedVoiceName = SpeechUtils.GetVoice().Name;
         SetSynthesizer();
     }
 
@@ -75,7 +74,7 @@ if (key != "Name" && key != "Gender" && key != "Age" && key != "Language")
 
     void SetSynthesizer()
     {
-        _speechUtils.SetVoice(_selectedVoiceName);
+        SpeechUtils.SetVoice(_selectedVoiceName);
         _selectedVoice = _voices.Find(v => v.Name == _selectedVoiceName);
         if (_selectedVoice.SupportedAudioFormats.Count != 0)
         {
@@ -94,17 +93,17 @@ if (key != "Name" && key != "Gender" && key != "Age" && key != "Language")
 
     private void SpeakText()
     {
-        _speechUtils.Speak(_text);
+        SpeechUtils.Speak(_text);
     }
 
     void SetSpeed()
     {
-        _speechUtils.SetRate(-10+_speed/5);
+        SpeechUtils.SetRate(-10+_speed/5);
     }
 
     void SetVolume()
     {
-        _speechUtils.SetVolume(_volume);
+        SpeechUtils.SetVolume(_volume);
     }
 
 }
