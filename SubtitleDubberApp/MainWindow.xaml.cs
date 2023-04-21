@@ -1,8 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Win32;
+using Web.Data;
 
 namespace SubtitleDubberApp
 {
@@ -14,10 +17,32 @@ namespace SubtitleDubberApp
         public MainWindow()
         {
             InitializeComponent();
-
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddWpfBlazorWebView();
             Resources.Add("services", serviceCollection.BuildServiceProvider());
+            State.AppStateChanged += State_AppStateChanged;
+        }
+
+        private void State_AppStateChanged(object sender, EventArgs e)
+        {
+            int appState = (int)sender;
+            switch (appState)
+            {
+                case 1:
+                    GetFilePath();
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private void GetFilePath()
+        {
+                OpenFileDialog openFileDialog = new OpenFileDialog();
+            if (openFileDialog.ShowDialog() == true)
+            {
+                State.InputFilePath = openFileDialog.FileName;
+                }
         }
     }
 

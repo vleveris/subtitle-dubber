@@ -11,6 +11,8 @@ namespace SubtitleDubber.Utils
 {
     internal class AudioUtils
     {
+public static string InputFilePath { set; get; }
+
         private long GetFileDuration(string fileName)
         {
             FileInfo fileInfo = new FileInfo(fileName);
