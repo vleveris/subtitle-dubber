@@ -30,8 +30,27 @@
                     }
                 }
                         </select>
+<h3>Selected voice information</h3>
+<ul>
+                <li>ID: @_selectedVoice.Id</li>
+                <li>Name: @_selectedVoice.Name</li>
+    <li>Language: @_selectedVoice.Culture</li>
+<li>Gender: @_selectedVoice.Gender</li>
+<li>Age: @_selectedVoice.Age</li>
+<li>Description: @_selectedVoice.Description</li>
+                <li>Supported audio formats: @_audioFormats</li>
+                @foreach (var key in _selectedVoice.AdditionalInfo.Keys)
+                {
+if (key != "Name" && key != "Gender" && key != "Age" && key != "Language")
+                    {
+                    <li>@String.Format("{0}: {1}", key, _selectedVoice.AdditionalInfo[key])</li>
+                    }
+                }
+            </ul>
+<hr/>
             <input type="range" min="0" max="100" class="slider" @bind = "_speed" @bind:after="SetSpeed" step="5" title="Speed"/>
             <input type="range" min="0" max="100" class="slider" @bind="_volume" @bind:after="SetVolume" title="Volume"/>
+<hr/>
         </div>
     </div>
 </div>
@@ -41,11 +60,13 @@
     string _selectedVoiceName;
     string _text = string.Empty;
     int _speed = 50, _volume=100;
-
+    VoiceInfo _selectedVoice;
+    string _audioFormats;
     protected override async Task OnInitializedAsync()
     {
         _voices = _speechUtils.GetInstalledVoices();
         _selectedVoiceName = _speechUtils.GetVoice().Name;
+        SetSynthesizer();
     }
 
     private void LoadFiles(InputFileChangeEventArgs e)
@@ -55,11 +76,20 @@
     void SetSynthesizer()
     {
         _speechUtils.SetVoice(_selectedVoiceName);
-    }
-
-    void ChangeSpeed()
-    {
-        _speechUtils.SetRate(_speed);
+        _selectedVoice = _voices.Find(v => v.Name == _selectedVoiceName);
+        if (_selectedVoice.SupportedAudioFormats.Count != 0)
+        {
+            foreach (var fmt in _selectedVoice.SupportedAudioFormats)
+            {
+                _audioFormats += String.Format("{0}, ",
+                fmt.EncodingFormat.ToString());
+            }
+            _audioFormats = _audioFormats.Substring(_volume, _audioFormats.Length - 2);
+        }
+        else
+        {
+            _audioFormats = " No supported audio formats found";
+        }
     }
 
     private void SpeakText()
