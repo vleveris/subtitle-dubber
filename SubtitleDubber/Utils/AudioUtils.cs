@@ -9,9 +9,8 @@ using System.Diagnostics;
 
 namespace SubtitleDubber.Utils
 {
-    internal class AudioUtils
+    public class AudioUtils
     {
-public static string InputFilePath { set; get; }
 
         private long GetFileDuration(string fileName)
         {
@@ -37,7 +36,7 @@ public static string InputFilePath { set; get; }
         
         private void AddSilence(string inputFileName, long msAtStart, long msAtEnd, string outputFileName)
         {
-string parameters = inputFileName + " " + outputFileName + " pad " + msAtStart / 1000;
+            string parameters = inputFileName + " " + outputFileName + " pad " + msAtStart / 1000;
             if (msAtStart%1000 != 0)
             {
                 parameters = parameters+ ".";
@@ -169,5 +168,37 @@ if (msRemainder<10)
             while (!validDuration);
         }
 
+        public List<SubtitleStreamDescription> GetSubtitleList(string videoFileName)
+        {
+            var commandName = "ffprobe";
+            var parameters = "-loglevel error -select_streams s -show_entries stream=index:stream_tags=language:stream_tags=title -of csv=p=0 " + videoFileName;
+var commandOutput = CommandExecutor.Execute(commandName, parameters);
+            var subtitles = commandOutput.Split("\r\n");
+            var descriptionList = new List<SubtitleStreamDescription>();
+
+foreach(var subtitle in subtitles)
+            {
+                if (!string.IsNullOrEmpty(subtitle))
+                {
+                    var description = new SubtitleStreamDescription();
+                    var subtitleParts = subtitle.Split(",");
+                    description.Id = long.Parse(subtitleParts[0]);
+                    description.LanguageCode = subtitleParts[1];
+if (subtitleParts.Length == 3)
+                    {
+                        description.Title = subtitleParts[2];
+                                            }
+                    descriptionList.Add(description);
+                }
+            }
+            return descriptionList;
+        }
+
+        public void DownloadSubtitle(string inputVideoFileName, string outputSubtitleFileName, string subtitleFormat, long subtitleTrackId)
+        {
+            var command = "ffmpeg";
+            var parameters = "-i " + inputVideoFileName + " -map 0:" + subtitleTrackId + " -c:s " + subtitleFormat + " " + outputSubtitleFileName + " -y";
+            CommandExecutor.Execute(command, parameters);
+                    }
     }
 }

@@ -4,7 +4,7 @@
 @using Web.Data
 
 @inject NavigationManager Navigation
-<PageTitle>Home</PageTitle>
+<PageTitle>Subtitle Dubber</PageTitle>
         <div class="col-md-8 mx-auto">
                 <div class="card" style="margin: auto; max-width: 500px; min-height: 16rem;">
                     <div class="card-header d-flex">
@@ -15,7 +15,7 @@
 <p>First, add video file and configure speech synthesizer.</p>
 <h2>Video file</h2>
             <button class="btn btn-primary align-bottom" type="button" @onclick="SelectFile">Choose file:</button>
-<label>Selected file: @State.InputFilePath</label>
+<label>Selected file: @State.InputVideoFileName</label>
 <hr/>
 <h2>TTS Settings</h2>
 <label for="text">Test speech:</label>
@@ -54,7 +54,7 @@ if (key != "Name" && key != "Gender" && key != "Age" && key != "Language")
             <input type="range" min="0" max="100" class="slider" @bind = "_speed" @bind:after="SetSpeed" step="5" title="Speed"/>
             <input type="range" min="0" max="100" class="slider" @bind="_volume" @bind:after="SetVolume" title="Volume"/>
 <hr/>
-            <button class="btn btn-primary align-bottom" type="button" disabled="string.isNullOrEmpty(State.InputFilePath)" @onclick="NavigateToAudioPage">Proceed</button>
+            <button class="btn btn-primary align-bottom" type="button" disabled="@string.IsNullOrEmpty(State.InputVideoFileName)" @onclick="NavigateToAudioPage">Proceed</button>
         </div>
     </div>
 </div>

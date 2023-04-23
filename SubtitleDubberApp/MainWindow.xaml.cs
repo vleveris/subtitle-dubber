@@ -29,21 +29,60 @@ namespace SubtitleDubberApp
             switch (appState)
             {
                 case 1:
-                    GetFilePath();
+                    GetInputVideoFileName();
+                    break;
+                case 2:
+                    GetOutputVideoFileName();
+                    break;
+                case 3:
+                    GetInputSubtitleFileName();
+                    break;
+                case 4:
+                    GetOutputSubtitleFileName();
                     break;
                 default:
                     break;
             }
         }
 
-        private void GetFilePath()
+        private void GetInputVideoFileName()
         {
                 OpenFileDialog openFileDialog = new OpenFileDialog();
             if (openFileDialog.ShowDialog() == true)
             {
-                State.InputFilePath = openFileDialog.FileName;
+                State.InputVideoFileName = openFileDialog.FileName;
                 }
         }
+
+        private void GetOutputVideoFileName()
+        {
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            if (saveFileDialog.ShowDialog() == true)
+            {
+                State.OutputVideoFileName = saveFileDialog.FileName;
+            }
+        }
+
+        private void GetInputSubtitleFileName()
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            if (openFileDialog.ShowDialog() == true)
+            {
+                State.InputSubtitleFileName = openFileDialog.FileName;
+            }
+        }
+
+        private void GetOutputSubtitleFileName()
+        {
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            if (saveFileDialog.ShowDialog() == true)
+            {
+                State.OutputSubtitleFileName = saveFileDialog.FileName;
+                State.AppState = 5;
+            }
+                    }
+
+
     }
 
     // Workaround for compiler error "error MC3050: Cannot find the type 'local:Main'"

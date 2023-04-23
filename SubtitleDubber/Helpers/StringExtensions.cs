@@ -43,6 +43,16 @@ namespace SubtitleDubber.Helpers
                 .Replace("{/u}", string.Empty);
         }
 
+        public static string RemoveSpecialTags(this string source)
+        {
+            if (string.IsNullOrEmpty(source))
+            {
+                return source;
+            }
+
+            return source.Replace("{\\an8}", string.Empty);
+        }
+
         public static string RemoveFont(this string source)
         {
             if (string.IsNullOrEmpty(source))
@@ -141,7 +151,7 @@ char s = (char)i;
 
         public static string RemoveAllFormatting(this string source)
         {
-            return source.RemoveBold().RemoveItalic().RemoveUnderline().RemoveFont().RemoveReturnChars();
+            return source.RemoveBold().RemoveItalic().RemoveUnderline().RemoveFont().RemoveReturnChars().RemoveSpecialTags();
         }
 
     }

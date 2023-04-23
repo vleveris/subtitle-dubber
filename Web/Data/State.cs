@@ -6,7 +6,11 @@ namespace Web.Data
     public static class State
     {
         private static int _appState;
-public static string InputFilePath { get; set; }
+public static string InputVideoFileName { get; set; }
+        public static string OutputVideoFileName { get; set; }
+        public static string InputSubtitleFileName { get; set; }
+        public static string OutputSubtitleFileName { get; set; }
+
         public static int AppState
         {
             get { return _appState; }
@@ -20,9 +24,6 @@ public static string InputFilePath { get; set; }
 
         public static event EventHandler AppStateChanged;
 
-        // language purists are going to hate what I am
-        // doing here ... but it works, and it has worked
-        // for many, many, years :)
         private static void OnAppStateChanged(int intValue)
         {
             if (AppStateChanged != null)

@@ -8,7 +8,7 @@ namespace SubtitleDubber.Utils
 {
     internal class CommandExecutor
     {
-        public static void Execute(string executable, string parameters, string workingDirectory = null)
+        public static string Execute(string executable, string parameters, string? workingDirectory = null)
         {
 
             using (Process p = new Process())
@@ -21,8 +21,12 @@ if (!string.IsNullOrEmpty(workingDirectory))
                 {
                     p.StartInfo.WorkingDirectory = workingDirectory;
                                     }
+                p.StartInfo.RedirectStandardOutput = true;
+
                 p.Start();
                 p.WaitForExit();
+                var output = p.StandardOutput.ReadToEnd();
+                return output;
             }
         }
     }

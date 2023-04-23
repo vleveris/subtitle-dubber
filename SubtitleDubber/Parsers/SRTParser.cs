@@ -7,7 +7,7 @@ namespace SubtitleDubber.Parsers
 {
     public class SrtParser : ISubtitleParser
     {
-        private const string NewLine = "\r\n";
+        private const string NewLine = "\n";
         private const string ItemDelimiter = NewLine + NewLine;
         public string FileExtension { get; set; } = ".srt";
 
