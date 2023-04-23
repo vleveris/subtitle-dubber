@@ -73,27 +73,27 @@ if (msRemainder<10)
         public void CreateSubtitleFiles(List<SubtitleItem> subtitles, string output)
         {
             string subtitleText;
-            long fileDuration, subtitleDuration, silenceDuration, msAtStart=0;
+            long fileDuration, msAtStart=0, subtitleSpeechDuration;
                                     foreach (var subtitle in subtitles)
                                     {
                 subtitleText = subtitle.Text.RemoveAllFormatting();
                                         var fileName = output + "\\" + subtitle.Index + ".wav";
                                         var outputFileName = output + "\\" + subtitle.Index + "_2.wav";
-                                        SpeakSubtitle(subtitleText, fileName, (long)subtitle.Duration.TotalActiveTime.TotalMilliseconds);
+                if (subtitle.Index == subtitles.Count)
+                {
+                    subtitleSpeechDuration = (long)subtitle.Duration.TotalActiveTime.TotalMilliseconds;
+                }
+                else
+                {
+                    subtitleSpeechDuration = (long)subtitles[subtitle.Index].Duration.Start.Subtract(subtitle.Duration.Start).TotalMilliseconds;
+                }
+                SpeakSubtitle(subtitleText, fileName, subtitleSpeechDuration);
                 if (subtitle.Index == 1)
                 {
                     msAtStart = (long)subtitle.Duration.Start.TotalMilliseconds;
                 }
                 fileDuration = GetFileDuration(fileName);
-                if (subtitle.Index < subtitles.Count)
-                {
-                    silenceDuration = (long)(subtitles[subtitle.Index].Duration.Start.Subtract(subtitle.Duration.Start).TotalMilliseconds-fileDuration);
-                }
-                else
-                {
-                    silenceDuration = (long)(subtitle.Duration.TotalActiveTime.TotalMilliseconds - fileDuration);
-                }
-                AddSilence(fileName, msAtStart, silenceDuration, outputFileName);
+                AddSilence(fileName, msAtStart, subtitleSpeechDuration-fileDuration, outputFileName);
                 msAtStart = 0;
             }
             int forCounter = subtitles.Count / 500;
@@ -138,34 +138,37 @@ if (msRemainder<10)
 
             }
 
-            private void SpeakSubtitle(string text, string outputFile, long duration)
+            private void SpeakSubtitle(string text, string outputFile, long duration = -1)
         {
             var validDuration = true;
             do
             {
                 SpeechUtils.SpeakToFile(text, outputFile);
-                long fileDuration = GetFileDuration(outputFile);
-                if (fileDuration > duration)
+                if (duration >= 0)
                 {
-                    validDuration = false;
-                    if (SpeechUtils.GetRate() == 10)
+                    long fileDuration = GetFileDuration(outputFile);
+                    if (fileDuration > duration)
                     {
-                        SpeechUtils.SetRateToDefault();
-                        text = text.RemovePunctuation().Shorten();
+                        validDuration = false;
+                        if (SpeechUtils.GetRate() == 10)
+                        {
+                            SpeechUtils.SetRateToDefault();
+                            text = text.RemovePunctuation().Shorten();
 
+                        }
+                        else
+                        {
+                            SpeechUtils.IncreaseRate();
+                        }
                     }
-                    else
+                    else if (!validDuration)
                     {
-                    SpeechUtils.IncreaseRate();
+                        validDuration = true;
+                        SpeechUtils.SetRateToDefault();
                     }
-                }
-                else if (!validDuration)
-                {
-                    validDuration = true;
-                    SpeechUtils.SetRateToDefault();
                 }
             }
-            while (!validDuration);
+                        while (!validDuration);
         }
 
         public List<SubtitleStreamDescription> GetSubtitleList(string videoFileName)
