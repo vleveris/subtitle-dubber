@@ -140,6 +140,7 @@ if (msRemainder<10)
 
             private void SpeakSubtitle(string text, string outputFile, long duration = -1)
         {
+            int chosenRate = SpeechUtils.GetRate();
             var validDuration = true;
             do
             {
@@ -152,7 +153,7 @@ if (msRemainder<10)
                         validDuration = false;
                         if (SpeechUtils.GetRate() == 10)
                         {
-                            SpeechUtils.SetRateToDefault();
+                            SpeechUtils.SetRate(chosenRate);
                             text = text.RemovePunctuation().Shorten();
 
                         }
@@ -164,7 +165,7 @@ if (msRemainder<10)
                     else if (!validDuration)
                     {
                         validDuration = true;
-                        SpeechUtils.SetRateToDefault();
+                        SpeechUtils.SetRate(chosenRate);
                     }
                 }
             }
