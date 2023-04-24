@@ -1,7 +1,6 @@
 ﻿using System.Speech.Synthesis;
 using System.Speech.AudioFormat;
-using System.Security.Principal;
-
+using SubtitleDubber.Models;
 namespace SubtitleDubber.Utils
 {
     public static class SpeechUtils
@@ -9,20 +8,29 @@ namespace SubtitleDubber.Utils
         private static SpeechSynthesizer _synthesizer = new();
         private static SpeechAudioFormatInfo _synthFormat = new(44100, AudioBitsPerSample.Sixteen, AudioChannel.Stereo);
 
-        public static List<VoiceInfo> GetInstalledVoices()
+        public static List<Models.VoiceInfo> GetInstalledVoices()
         {
-            List<VoiceInfo> voices = new List<VoiceInfo>();
+            List<Models.VoiceInfo> voices = new List<Models.VoiceInfo>();
                          foreach (var voice in _synthesizer.GetInstalledVoices())
                         {
                             var info = voice.VoiceInfo;
-                voices.Add(info);
+                var infoModel = new Models.VoiceInfo();
+                infoModel.AdditionalInfo = info.AdditionalInfo;
+                infoModel.Name = info.Name;
+                infoModel.Description = info.Description;
+                infoModel.Age = info.Age.ToString();
+                infoModel.Language = info.Culture.ToString();
+                infoModel.Id = info.Id;
+                infoModel.Gender = info.Gender.ToString();
+
+                voices.Add(infoModel);
              }
             return voices;
         }
 
-        public static VoiceInfo GetVoice()
+        public static string GetVoiceName()
         {
-            return _synthesizer.Voice;
+            return _synthesizer.Voice.Name;
         }
 
         public static void SetVoice(string name)

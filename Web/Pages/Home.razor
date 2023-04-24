@@ -1,6 +1,6 @@
 ﻿@page "/"
 @using SubtitleDubber.Utils
-@using System.Speech.Synthesis
+@using SubtitleDubber.Models
 @using Web.Data
 
 @inject NavigationManager Navigation
@@ -29,7 +29,7 @@
                 {
                     @foreach (var voice in _voices)
                     {
-                        <option value="@voice.Name">@voice.Name - @voice.Culture</option>
+                        <option value="@voice.Name">@voice.Name - @voice.Language</option>
                     }
                 }
                         </select>
@@ -37,11 +37,10 @@
 <ul>
                 <li>ID: @_selectedVoice.Id</li>
                 <li>Name: @_selectedVoice.Name</li>
-    <li>Language: @_selectedVoice.Culture</li>
+    <li>Language: @_selectedVoice.Language</li>
 <li>Gender: @_selectedVoice.Gender</li>
 <li>Age: @_selectedVoice.Age</li>
 <li>Description: @_selectedVoice.Description</li>
-                <li>Supported audio formats: @_audioFormats</li>
                 @foreach (var key in _selectedVoice.AdditionalInfo.Keys)
                 {
 if (key != "Name" && key != "Gender" && key != "Age" && key != "Language")
@@ -64,12 +63,12 @@ if (key != "Name" && key != "Gender" && key != "Age" && key != "Language")
     string _text = string.Empty;
     int _speed = 50, _volume=100;
     VoiceInfo _selectedVoice;
-    string _audioFormats;
     protected override async Task OnInitializedAsync()
     {
         _voices = SpeechUtils.GetInstalledVoices();
-        _selectedVoiceName = SpeechUtils.GetVoice().Name;
+        _selectedVoiceName = SpeechUtils.GetVoiceName();
         SetSynthesizer();
+        _selectedVoice = _voices.Find(v => v.Name == _selectedVoiceName);
     }
 
     private void SelectFile()
@@ -80,20 +79,6 @@ if (key != "Name" && key != "Gender" && key != "Age" && key != "Language")
     void SetSynthesizer()
     {
         SpeechUtils.SetVoice(_selectedVoiceName);
-        _selectedVoice = _voices.Find(v => v.Name == _selectedVoiceName);
-        if (_selectedVoice.SupportedAudioFormats.Count != 0)
-        {
-            foreach (var fmt in _selectedVoice.SupportedAudioFormats)
-            {
-                _audioFormats += String.Format("{0}, ",
-                fmt.EncodingFormat.ToString());
-            }
-            _audioFormats = _audioFormats.Substring(_volume, _audioFormats.Length - 2);
-        }
-        else
-        {
-            _audioFormats = " No supported audio formats found";
-        }
     }
 
     private void SpeakText()
