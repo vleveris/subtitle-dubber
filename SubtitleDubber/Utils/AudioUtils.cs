@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using SubtitleDubber.Models;
 using SubtitleDubber.Helpers;
 using System.Diagnostics;
+using System.Speech.Synthesis;
+using System.Runtime.CompilerServices;
 
 namespace SubtitleDubber.Utils
 {
@@ -70,10 +72,11 @@ if (msRemainder<10)
             CommandExecutor.Execute("sox", parameters);
                     }
 
-        public void CreateSubtitleFiles(List<SubtitleItem> subtitles, string output)
+        public void CreateSubtitleFiles(List<SubtitleItem> subtitles, string output, bool useSox = true)
         {
             string subtitleText;
-            long fileDuration, msAtStart=0, subtitleSpeechDuration;
+            long fileDuration, msAtStart=0, subtitleSpeechDuration, silenceDuration;
+            var builder = new PromptBuilder();
                                     foreach (var subtitle in subtitles)
                                     {
                 subtitleText = subtitle.Text.RemoveAllFormatting();
@@ -91,52 +94,80 @@ if (msRemainder<10)
                 if (subtitle.Index == 1)
                 {
                     msAtStart = (long)subtitle.Duration.Start.TotalMilliseconds;
+                    if (!useSox)
+                    {
+                        builder.AppendBreak(new TimeSpan(0, 0, 0, (int)msAtStart / 1000, (int)msAtStart % 1000));
+                    }
                 }
                 fileDuration = GetFileDuration(fileName);
-                AddSilence(fileName, msAtStart, subtitleSpeechDuration-fileDuration, outputFileName);
+                silenceDuration = subtitleSpeechDuration - fileDuration;
+                if (useSox)
+                {
+                    AddSilence(fileName, msAtStart, silenceDuration, outputFileName);
+                }
+                else
+                {
+                    builder.AppendAudio(fileName);
+                    var msForBuilder = silenceDuration;
+                    for (int i = 0; i < msForBuilder / 65535; ++i)
+                    {
+                        builder.AppendBreak(new TimeSpan(655350000));
+                        msForBuilder -= 65535;
+                    }
+                    builder.AppendBreak(new TimeSpan(msForBuilder * 10000));
+                }
                 msAtStart = 0;
             }
-            int forCounter = subtitles.Count / 500;
-            if (subtitles.Count%500>0)
+            if (useSox)
             {
-                ++forCounter;
-            }
-            var finalFileName = string.Empty;
-            string parameters = string.Empty;
-                        for (int i = 0; i < forCounter; ++i)
-                        {
+                int forCounter = subtitles.Count / 500;
+                if (subtitles.Count % 500 > 0)
+                {
+                    ++forCounter;
+                }
+                var finalFileName = string.Empty;
+                string parameters = string.Empty;
+                for (int i = 0; i < forCounter; ++i)
+                {
+                    parameters = string.Empty;
+                    for (int j = 0; j < 500 && i * 500 + j < subtitles.Count; ++j)
+                    {
+                        var fileName = subtitles[i * 500 + j].Index + "_2.wav";
+                        parameters = parameters + fileName + " ";
+                    }
+                    finalFileName = "final" + (i + 1) + ".wav";
+                    parameters = parameters + finalFileName;
+                    CommandExecutor.Execute("sox", parameters, output);
+                }
                 parameters = string.Empty;
-                for (int j=0;j<500 && i*500+j<subtitles.Count;++j)
-                            {
-                                var fileName = subtitles[i* 500 + j].Index + "_2.wav";
-                                parameters= parameters+ fileName + " ";
-                                                }
-                            finalFileName = "final"+(i+1)+".wav";
-                            parameters= parameters+ finalFileName;
+                for (int i = 0; i < forCounter; ++i)
+                {
+                    var fileName = "final" + (i + 1) + ".wav";
+                    parameters = parameters + fileName + " ";
+                }
+                finalFileName = "final.wav";
+                parameters = parameters + finalFileName;
                 CommandExecutor.Execute("sox", parameters, output);
-                        }
-            parameters = string.Empty;
-                        for (int i = 0; i < forCounter; ++i)
-                        {
-                            var fileName = "final" + (i + 1) + ".wav";
-                            parameters= parameters+ fileName + " ";
-                        }
-                        finalFileName = "final.wav";
-                        parameters= parameters+ finalFileName;
-            CommandExecutor.Execute("sox", parameters, output);
-                        for (int i = 0; i < forCounter; ++i)
-                        {
-                            RemoveFile(output + "\\" + "final" + (i + 1) + ".wav");
-                        }
-            foreach (var subtitle in subtitles)
+                for (int i = 0; i < forCounter; ++i)
+                {
+                    RemoveFile(output + "\\" + "final" + (i + 1) + ".wav");
+                }
+            }
+            else
             {
-                var fileName = output + "\\" + subtitle.Index + ".wav";
-                var outputFileName = output + "\\" + subtitle.Index + "_2.wav";
-                            RemoveFile(fileName);
-                                RemoveFile(outputFileName);
+                SpeechUtils.SpeakPrompt(builder, output + "\\final.wav");
             }
-
+                        foreach (var subtitle in subtitles)
+                        {
+                            var fileName = output + "\\" + subtitle.Index + ".wav";
+                            var outputFileName = output + "\\" + subtitle.Index + "_2.wav";
+                                        RemoveFile(fileName);
+if (useSox)
+                {
+                                            RemoveFile(outputFileName);
+                }
             }
+        }
 
             private void SpeakSubtitle(string text, string outputFile, long duration = -1)
         {
@@ -204,5 +235,25 @@ if (subtitleParts.Length == 3)
             var parameters = "-i " + inputVideoFileName + " -map 0:" + subtitleTrackId + " -c:s " + subtitleFormat + " " + outputSubtitleFileName + " -y";
             CommandExecutor.Execute(command, parameters);
                     }
+
+private string InsertSilence(string parameters, long ms)
+{
+    var insertion = string.Empty + ms / 1000;
+    long msRemainder = ms % 1000;
+    if (msRemainder!= 0)
+    {
+        insertion= insertion+ ".";
+        if (msRemainder < 10)
+        {
+            insertion= insertion+ "00";
+        }
+        else if (msRemainder < 100)
+        {
+            insertion= insertion+ "0";
+        }
+        insertion= insertion+ msRemainder;
+    }
+    return parameters + insertion;
+    }
     }
 }

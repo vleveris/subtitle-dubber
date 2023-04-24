@@ -53,7 +53,14 @@ public static void Speak(string text)
             _synthesizer.SetOutputToNull();
         }
 
-public static void IncreaseRate()
+        public static void SpeakPrompt(PromptBuilder builder, string fileName)
+        {
+            _synthesizer.SetOutputToWaveFile(fileName, _synthFormat);
+            _synthesizer.Speak(builder);
+            _synthesizer.SetOutputToNull();
+        }
+
+        public static void IncreaseRate()
         {
             ++_synthesizer.Rate;
         }
