@@ -36,6 +36,7 @@ namespace SubtitleDubber.Parsers
             var vttSubParts = GetVttSubTitleParts(reader).ToList();
             if (vttSubParts.Any())
             {
+                int index = 1;
                 foreach (var vttSubPart in vttSubParts)
                 {
                     var lines =
@@ -66,6 +67,8 @@ namespace SubtitleDubber.Parsers
 
                     if (item.Duration != null && item.Text.Any())
                     {
+                        item.Index = index;
+                        ++index;
                         items.Add(item);
                     }
                 }
