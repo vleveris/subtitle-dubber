@@ -38,38 +38,11 @@ namespace SubtitleDubber.Utils
         
         private void AddSilence(string inputFileName, long msAtStart, long msAtEnd, string outputFileName)
         {
-            string parameters = inputFileName + " " + outputFileName + " pad " + msAtStart / 1000;
-            if (msAtStart%1000 != 0)
-            {
-                parameters = parameters+ ".";
-                long msRemainder = msAtStart % 1000;
-if (msRemainder<10)
-                {
-                    parameters= parameters+ "00";
-                                    }
-                else if (msRemainder < 100)
-                {
-                    parameters= parameters+ "0";
-                }
-                parameters= parameters+ msRemainder;
-                            }
-
-            parameters= parameters+ " " + msAtEnd / 1000;
-            if (msAtEnd%1000 != 0)
-            {
-                parameters= parameters+ ".";
-                long msRemainder = msAtEnd % 1000;
-                if (msRemainder < 10)
-                {
-                    parameters= parameters+ "00";
-                }
-                else if (msRemainder < 100)
-                {
-                    parameters= parameters+ "0";
-                }
-                parameters= parameters+ msRemainder;
-            }
-            CommandExecutor.Execute("sox", parameters);
+            string parameters = inputFileName + " " + outputFileName + " pad ";
+            parameters = InsertSilence(parameters, msAtStart);
+            parameters = parameters + " ";
+            parameters = InsertSilence(parameters, msAtEnd);
+                        CommandExecutor.Execute("sox", parameters);
                     }
 
         public void CreateSubtitleFiles(List<SubtitleItem> subtitles, string output, bool useSox = true)
@@ -77,11 +50,11 @@ if (msRemainder<10)
             string subtitleText;
             long fileDuration, msAtStart=0, subtitleSpeechDuration, silenceDuration;
             var builder = new PromptBuilder();
+            var silences = new long[subtitles.Count + 1];
                                     foreach (var subtitle in subtitles)
                                     {
                 subtitleText = subtitle.Text.RemoveAllFormatting();
                                         var fileName = output + "\\" + subtitle.Index + ".wav";
-                                        var outputFileName = output + "\\" + subtitle.Index + "_2.wav";
                 if (subtitle.Index == subtitles.Count)
                 {
                     subtitleSpeechDuration = (long)subtitle.Duration.TotalActiveTime.TotalMilliseconds;
@@ -98,12 +71,16 @@ if (msRemainder<10)
                     {
                         builder.AppendBreak(new TimeSpan(0, 0, 0, (int)msAtStart / 1000, (int)msAtStart % 1000));
                     }
+                    else
+                    {
+                        silences[0] = msAtStart;
+                    }
                 }
                 fileDuration = GetFileDuration(fileName);
                 silenceDuration = subtitleSpeechDuration - fileDuration;
                 if (useSox)
                 {
-                    AddSilence(fileName, msAtStart, silenceDuration, outputFileName);
+                    silences[subtitle.Index] = silenceDuration;
                 }
                 else
                 {
@@ -132,8 +109,17 @@ if (msRemainder<10)
                     parameters = string.Empty;
                     for (int j = 0; j < 500 && i * 500 + j < subtitles.Count; ++j)
                     {
-                        var fileName = subtitles[i * 500 + j].Index + "_2.wav";
-                        parameters = parameters + fileName + " ";
+                        var fileName = subtitles[i * 500 + j].Index + ".wav";
+                        var outputFileName = subtitles[i * 500 + j].Index + "_2.wav";
+                        parameters = parameters + outputFileName + " ";
+                        if (subtitles[i * 500 + j].Index == 1)
+                        {
+                                                AddSilence(output + "\\"+fileName, silences[0], silences[1], output+"\\"+outputFileName);
+                                                    }
+                        else
+                        {
+                            AddSilence(output + "\\" + fileName, 0, silences[subtitles[i * 500 + j].Index], output + "\\" + outputFileName);
+                                                    }
                     }
                     finalFileName = "final" + (i + 1) + ".wav";
                     parameters = parameters + finalFileName;
