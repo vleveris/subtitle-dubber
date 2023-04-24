@@ -63,7 +63,20 @@ namespace SubtitleDubber.Utils
                 {
                     subtitleSpeechDuration = (long)subtitles[subtitle.Index].Duration.Start.Subtract(subtitle.Duration.Start).TotalMilliseconds;
                 }
-                SpeakSubtitle(subtitleText, fileName, subtitleSpeechDuration);
+                var overlap = SpeakSubtitle(subtitleText, fileName, subtitleSpeechDuration);
+                if (overlap>0)
+                {
+                    var silenceCutValue = CalculateSpeechTime(silences[subtitle.Index - 1], overlap);
+                    if (silenceCutValue == 0)
+                    {
+
+                    }
+                    else
+                    {
+                        subtitleSpeechDuration += silenceCutValue;
+                        silences[subtitle.Index - 1]-=silenceCutValue;
+                    }
+                }
                 if (subtitle.Index == 1)
                 {
                     msAtStart = (long)subtitle.Duration.Start.TotalMilliseconds;
@@ -155,10 +168,11 @@ if (useSox)
             }
         }
 
-            private void SpeakSubtitle(string text, string outputFile, long duration = -1)
+            private long SpeakSubtitle(string text, string outputFile, long duration = -1)
         {
             int chosenRate = SpeechUtils.GetRate();
             var validDuration = true;
+            var shortened = false;
             do
             {
                 SpeechUtils.SpeakToFile(text, outputFile);
@@ -170,10 +184,17 @@ if (useSox)
                         validDuration = false;
                         if (SpeechUtils.GetRate() == 10)
                         {
-                            SpeechUtils.SetRate(chosenRate);
-                            text = text.RemovePunctuation().Shorten();
-
-                        }
+                            if (!shortened)
+                            {
+                                SpeechUtils.SetRate(chosenRate);
+                                text = text.RemovePunctuation().Shorten();
+                                shortened = true;
+                            }
+                            else
+                            {
+                                return fileDuration - duration;
+                            }
+                            }
                         else
                         {
                             SpeechUtils.IncreaseRate();
@@ -187,6 +208,7 @@ if (useSox)
                 }
             }
                         while (!validDuration);
+            return 0;
         }
 
         public List<SubtitleStreamDescription> GetSubtitleList(string videoFileName)
@@ -241,5 +263,18 @@ private string InsertSilence(string parameters, long ms)
     }
     return parameters + insertion;
     }
+    
+    private long CalculateSpeechTime(long previousSilence, long overlap)
+        {
+            if (overlap>previousSilence)
+            {
+                return 0;
+            }
+else if (previousSilence>=2*overlap)
+            {
+                return 2 * overlap;
+            }
+            return overlap;
+        }
     }
 }
