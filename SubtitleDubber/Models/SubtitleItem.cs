@@ -1,5 +1,6 @@
 ﻿using System;
 using SubtitleDubber.Helpers;
+
 namespace SubtitleDubber.Models
 {
     public class SubtitleItem
@@ -34,6 +35,10 @@ namespace SubtitleDubber.Models
             get => _text;
             set => _text = value == null ? string.Empty : value.Trim();
         }
+
+public SubtitleItem()
+        {
+                    }
 
         public SubtitleItem(int index, SubtitleDuration duration, string text)
         {
