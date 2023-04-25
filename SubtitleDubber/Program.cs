@@ -2,6 +2,8 @@
 using System.Text;
 using SubtitleDubber.Utils;
 using SubtitleDubber.Helpers;
+using SubtitleDubber.Services;
+
 namespace SubtitleDubber
 {
 
@@ -25,8 +27,8 @@ namespace SubtitleDubber
 
             Parsers.SrtParser parser = new Parsers.SrtParser();
             var subtitles = parser.Parse(input);
-            var audioUtils = new AudioUtils();
-            audioUtils.CreateSubtitleFiles(subtitles, output);
+            var _dubbingService = new DubbingService();
+            _dubbingService.CreateSubtitleFiles(subtitles, output);
             }
     }
 }

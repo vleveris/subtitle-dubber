@@ -1,5 +1,5 @@
 ﻿@page "/"
-@using SubtitleDubber.Utils
+@using SubtitleDubber.Services
 @using SubtitleDubber.Models
 @using Web.Data
 
@@ -63,10 +63,11 @@ if (key != "Name" && key != "Gender" && key != "Age" && key != "Language")
     string _text = string.Empty;
     int _speed = 50, _volume=100;
     VoiceInfo _selectedVoice;
+    private SpeechService _speechService = new();
     protected override async Task OnInitializedAsync()
     {
-        _voices = SpeechUtils.GetInstalledVoices();
-        _selectedVoiceName = SpeechUtils.GetVoiceName();
+        _voices = _speechService.GetInstalledVoices();
+        _selectedVoiceName = _speechService.GetVoiceName();
         SetSynthesizer();
         _selectedVoice = _voices.Find(v => v.Name == _selectedVoiceName);
     }
@@ -78,22 +79,22 @@ if (key != "Name" && key != "Gender" && key != "Age" && key != "Language")
 
     void SetSynthesizer()
     {
-        SpeechUtils.SetVoice(_selectedVoiceName);
+        _speechService.SetVoice(_selectedVoiceName);
     }
 
     private void SpeakText()
     {
-        SpeechUtils.Speak(_text);
+        _speechService.Speak(_text);
     }
 
     void SetSpeed()
     {
-        SpeechUtils.SetRate(-10+_speed/5);
+        _speechService.SetRate(-10 + _speed / 5);
     }
 
     void SetVolume()
     {
-        SpeechUtils.SetVolume(_volume);
+        _speechService.SetVolume(_volume);
     }
 
     private void NavigateToAudioPage()

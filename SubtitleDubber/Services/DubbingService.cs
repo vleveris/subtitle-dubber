@@ -5,14 +5,14 @@ using System.Text;
 using System.Threading.Tasks;
 using SubtitleDubber.Models;
 using SubtitleDubber.Helpers;
-using System.Diagnostics;
+using SubtitleDubber.Utils;
 using System.Speech.Synthesis;
-using System.Runtime.CompilerServices;
 
-namespace SubtitleDubber.Utils
+namespace SubtitleDubber.Services
 {
-    public class AudioUtils
+    public class DubbingService
     {
+        private SpeechService _speechService = new();
 
         private long GetFileDuration(string fileName)
         {
@@ -35,17 +35,17 @@ namespace SubtitleDubber.Utils
         {
             File.Move(oldName, newName);
         }
-        
+
         public void CreateSubtitleFiles(List<SubtitleItem> subtitles, string output, bool useSox = true)
         {
             string subtitleText;
-            long fileDuration, msAtStart=0, subtitleSpeechDuration, silenceDuration;
+            long fileDuration, msAtStart = 0, subtitleSpeechDuration, silenceDuration;
             var builder = new PromptBuilder();
             var silences = new long[subtitles.Count + 1];
-                                    foreach (var subtitle in subtitles)
-                                    {
+            foreach (var subtitle in subtitles)
+            {
                 subtitleText = subtitle.Text.RemoveAllFormatting();
-                                        var fileName = output + "\\" + subtitle.Index + ".wav";
+                var fileName = output + "\\" + subtitle.Index + ".wav";
                 if (subtitle.Index == subtitles.Count)
                 {
                     subtitleSpeechDuration = (long)subtitle.Duration.TotalActiveTime.TotalMilliseconds;
@@ -55,7 +55,7 @@ namespace SubtitleDubber.Utils
                     subtitleSpeechDuration = (long)subtitles[subtitle.Index].Duration.Start.Subtract(subtitle.Duration.Start).TotalMilliseconds;
                 }
                 var overlap = SpeakSubtitle(subtitleText, fileName, subtitleSpeechDuration);
-                if (overlap>0)
+                if (overlap > 0)
                 {
                     var silenceCutValue = CalculateSpeechTime(silences[subtitle.Index - 1], overlap);
                     if (silenceCutValue == 0)
@@ -65,7 +65,7 @@ namespace SubtitleDubber.Utils
                     else
                     {
                         subtitleSpeechDuration += silenceCutValue;
-                        silences[subtitle.Index - 1]-=silenceCutValue;
+                        silences[subtitle.Index - 1] -= silenceCutValue;
                     }
                 }
                 if (subtitle.Index == 1)
@@ -118,12 +118,12 @@ namespace SubtitleDubber.Utils
                         parameters.Add(outputFileName);
                         if (subtitles[i * 500 + j].Index == 1)
                         {
-CommandExecutor.ExecuteSilenceCommand(output + "\\"+fileName, silences[0], silences[1], output+"\\"+outputFileName);
-                                                    }
+                            CommandExecutor.ExecuteSilenceCommand(output + "\\" + fileName, silences[0], silences[1], output + "\\" + outputFileName);
+                        }
                         else
                         {
                             CommandExecutor.ExecuteSilenceCommand(output + "\\" + fileName, 0, silences[subtitles[i * 500 + j].Index], output + "\\" + outputFileName);
-                                                    }
+                        }
                     }
                     finalFileName = "final" + (i + 1) + ".wav";
                     parameters.Add(finalFileName);
@@ -145,39 +145,39 @@ CommandExecutor.ExecuteSilenceCommand(output + "\\"+fileName, silences[0], silen
             }
             else
             {
-                SpeechUtils.SpeakPrompt(builder, output + "\\final.wav");
+                _speechService.Speak(builder, output + "\\final.wav");
             }
-                        foreach (var subtitle in subtitles)
-                        {
-                            var fileName = output + "\\" + subtitle.Index + ".wav";
-                            var outputFileName = output + "\\" + subtitle.Index + "_2.wav";
-                                        RemoveFile(fileName);
-if (useSox)
+            foreach (var subtitle in subtitles)
+            {
+                var fileName = output + "\\" + subtitle.Index + ".wav";
+                var outputFileName = output + "\\" + subtitle.Index + "_2.wav";
+                RemoveFile(fileName);
+                if (useSox)
                 {
-                                            RemoveFile(outputFileName);
+                    RemoveFile(outputFileName);
                 }
             }
         }
 
-            private long SpeakSubtitle(string text, string outputFile, long duration = -1)
+        private long SpeakSubtitle(string text, string outputFile, long duration = -1)
         {
-            int chosenRate = SpeechUtils.GetRate();
+            int chosenRate = _speechService.GetRate();
             var validDuration = true;
             var shortened = false;
             do
             {
-                SpeechUtils.SpeakToFile(text, outputFile);
+                _speechService.Speak(text, outputFile);
                 if (duration >= 0)
                 {
                     long fileDuration = GetFileDuration(outputFile);
                     if (fileDuration > duration)
                     {
                         validDuration = false;
-                        if (SpeechUtils.GetRate() == 10)
+                        if (_speechService.GetRate() == 10)
                         {
                             if (!shortened)
                             {
-                                SpeechUtils.SetRate(chosenRate);
+                                _speechService.SetRate(chosenRate);
                                 text = text.RemovePunctuation().Shorten();
                                 shortened = true;
                             }
@@ -185,30 +185,30 @@ if (useSox)
                             {
                                 return fileDuration - duration;
                             }
-                            }
+                        }
                         else
                         {
-                            SpeechUtils.IncreaseRate();
+                            _speechService.IncreaseRate();
                         }
                     }
                     else if (!validDuration)
                     {
                         validDuration = true;
-                        SpeechUtils.SetRate(chosenRate);
+                        _speechService.SetRate(chosenRate);
                     }
                 }
             }
-                        while (!validDuration);
+            while (!validDuration);
             return 0;
         }
 
         public List<SubtitleStreamDescription> GetSubtitleList(string videoFileName)
         {
-var commandOutput = CommandExecutor.ExecuteSubtitleListCommand(videoFileName);
+            var commandOutput = CommandExecutor.ExecuteSubtitleListCommand(videoFileName);
             var subtitles = commandOutput.Split("\r\n");
             var descriptionList = new List<SubtitleStreamDescription>();
 
-foreach(var subtitle in subtitles)
+            foreach (var subtitle in subtitles)
             {
                 if (!string.IsNullOrEmpty(subtitle))
                 {
@@ -216,23 +216,23 @@ foreach(var subtitle in subtitles)
                     var subtitleParts = subtitle.Split(",");
                     description.Id = long.Parse(subtitleParts[0]);
                     description.LanguageCode = subtitleParts[1];
-if (subtitleParts.Length == 3)
+                    if (subtitleParts.Length == 3)
                     {
                         description.Title = subtitleParts[2];
-                                            }
+                    }
                     descriptionList.Add(description);
                 }
             }
             return descriptionList;
         }
 
-    private long CalculateSpeechTime(long previousSilence, long overlap)
+        private long CalculateSpeechTime(long previousSilence, long overlap)
         {
-            if (overlap>previousSilence)
+            if (overlap > previousSilence)
             {
                 return 0;
             }
-else if (previousSilence>=2*overlap)
+            else if (previousSilence >= 2 * overlap)
             {
                 return 2 * overlap;
             }

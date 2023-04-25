@@ -1,5 +1,5 @@
 ﻿@page "/audio"
-@using SubtitleDubber.Utils
+@using SubtitleDubber.Services
 @using SubtitleDubber.Models
 @using SubtitleDubber.Parsers
 @using Web.Data
@@ -42,7 +42,7 @@
     </div>
 </div>
 @code {
-    private AudioUtils _audioUtils = new();
+    private DubbingService _dubbingService = new();
     private List<SubtitleStreamDescription> _subtitleList = new();
     private int _selectedSubtitleId = -1;
     private string _selectedSubtitleFormat = "srt";
@@ -50,7 +50,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        _subtitleList = _audioUtils.GetSubtitleList(State.InputVideoFileName);
+        _subtitleList = _dubbingService.GetSubtitleList(State.InputVideoFileName);
         State.AppStateChanged += State_AppStateChanged;
         State.OutputVideoFileName = string.Empty;
         State.OutputSubtitleFileName = string.Empty;
@@ -66,12 +66,12 @@
         if (string.IsNullOrEmpty(inputSubtitleFileName))
         {
             inputSubtitleFileName = tempDirectory + "\\subtitle.srt";
-            _audioUtils.DownloadSubtitle(State.InputVideoFileName, inputSubtitleFileName, _selectedSubtitleFormat, _selectedSubtitleId);
+            _dubbingService.DownloadSubtitle(State.InputVideoFileName, inputSubtitleFileName, _selectedSubtitleFormat, _selectedSubtitleId);
         }
         var parser = new SrtParser();
         var subtitles = parser.Parse(inputSubtitleFileName);
         var outputVideoFileName = tempDirectory + "\\video.mkv";
-        _audioUtils.CreateSubtitleFiles(subtitles, tempDirectory);
+        _dubbingService.CreateSubtitleFiles(subtitles, tempDirectory);
     }
 
     private void SelectSubtitleInputFile()
@@ -97,7 +97,7 @@
             case 5:
                 if (!string.IsNullOrEmpty(State.OutputSubtitleFileName))
                 {
-                    _audioUtils.DownloadSubtitle(State.InputVideoFileName, State.OutputSubtitleFileName, _selectedSubtitleFormat, _selectedSubtitleId);
+                    _dubbingService.DownloadSubtitle(State.InputVideoFileName, State.OutputSubtitleFileName, _selectedSubtitleFormat, _selectedSubtitleId);
                 }
                 break;
             default:
