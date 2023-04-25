@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
-using SubtitleDubber.Models.Commands;
+using SubtitleDubber.Utils.Commands;
 
 namespace SubtitleDubber.Utils
 {

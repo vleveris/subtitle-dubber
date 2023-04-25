@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace SubtitleDubber.Models.Commands
+namespace SubtitleDubber.Utils.Commands
 {
     public class SubtitleListCommand : FFPROBECommand
     {

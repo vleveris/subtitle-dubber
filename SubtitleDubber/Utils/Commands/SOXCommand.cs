@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 
-namespace SubtitleDubber.Models.Commands
+namespace SubtitleDubber.Utils.Commands
 {
-    public class SOXCommand: Command
+    public class SOXCommand : Command
     {
         private const string CommandName = "sox";
         public SOXCommand() : base(CommandName, new List<string>())

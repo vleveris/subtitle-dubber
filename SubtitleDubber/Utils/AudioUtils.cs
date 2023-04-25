@@ -8,7 +8,6 @@ using SubtitleDubber.Helpers;
 using System.Diagnostics;
 using System.Speech.Synthesis;
 using System.Runtime.CompilerServices;
-using SubtitleDubber.Models.Commands;
 
 namespace SubtitleDubber.Utils
 {

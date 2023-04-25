@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace SubtitleDubber.Models.Commands
+namespace SubtitleDubber.Utils.Commands
 {
     public class DownloadSubtitleCommand : FFMPEGCommand
     {
@@ -26,7 +26,7 @@ namespace SubtitleDubber.Models.Commands
                 throw new ArgumentNullException("OutputFileName");
             }
 
-            if (SubtitleTrackId<0)
+            if (SubtitleTrackId < 0)
             {
                 throw new ArgumentOutOfRangeException("SubtitleTrackId<0");
             }
@@ -40,8 +40,8 @@ namespace SubtitleDubber.Models.Commands
             {
                 throw new ArgumentOutOfRangeException("Unsupported subtitle format.");
                 // todo: FFMPEG supported subtitle formats should go into AvailableSubtitleFormats array
-// Separate exception class might be needed
-                            }
+                // Separate exception class might be needed
+            }
 
             Arguments.Add(InputOption);
             Arguments.Add(InputFileName);

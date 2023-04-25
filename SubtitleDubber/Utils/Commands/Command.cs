@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SubtitleDubber.Models.Commands
+namespace SubtitleDubber.Utils.Commands
 {
     public abstract class Command
     {
@@ -14,7 +14,7 @@ namespace SubtitleDubber.Models.Commands
         public string WorkingDirectory { get; set; } = string.Empty;
         public Command(string executable, List<string> arguments)
         {
-if (!ExistsOnPath(executable))
+            if (!ExistsOnPath(executable))
             {
                 throw new ArgumentOutOfRangeException("Executable not present at PATH");
             }
@@ -40,10 +40,10 @@ if (!ExistsOnPath(executable))
                 return Path.GetFullPath(fileName);
             }
 
-        var values = Environment.GetEnvironmentVariable("PATH");
+            var values = Environment.GetEnvironmentVariable("PATH");
             foreach (var path in values.Split(Path.PathSeparator))
             {
-                var fullPath = Path.Combine(path, fileName+ExecutableExtention);
+                var fullPath = Path.Combine(path, fileName + ExecutableExtention);
                 if (File.Exists(fullPath))
                     return fullPath;
             }

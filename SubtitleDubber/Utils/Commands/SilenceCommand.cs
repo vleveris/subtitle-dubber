@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
 
-namespace SubtitleDubber.Models.Commands
+namespace SubtitleDubber.Utils.Commands
 {
     public class SilenceCommand : SOXCommand
     {
         private const string PadArgument = "pad";
         public string InputFileName { get; set; } = null!;
-public string OutputFileName { get; set; } = null!;
+        public string OutputFileName { get; set; } = null!;
         public long MsAtStart { get; set; } = 0;
         public long MsAtEnd { get; set; } = 0;
 
@@ -17,15 +17,15 @@ public string OutputFileName { get; set; } = null!;
                 throw new ArgumentNullException("InputFileName");
             }
             if (string.IsNullOrEmpty(OutputFileName))
-                    {
-                    throw new ArgumentNullException("OutputFileName");
-                            }
+            {
+                throw new ArgumentNullException("OutputFileName");
+            }
             Arguments.Add(InputFileName);
             Arguments.Add(OutputFileName);
             Arguments.Add(PadArgument);
             Arguments.Add(FormatSilenceTime(MsAtStart));
             Arguments.Add(FormatSilenceTime(MsAtEnd));
-                    }
+        }
 
         private string FormatSilenceTime(long ms)
         {
