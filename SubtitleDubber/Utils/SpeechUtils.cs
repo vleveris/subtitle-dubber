@@ -40,7 +40,14 @@ namespace SubtitleDubber.Utils
 
 public static void Speak(string text)
         {
-            _synthesizer.SetOutputToDefaultAudioDevice();
+            try
+            {
+                _synthesizer.SetOutputToDefaultAudioDevice();
+            }
+catch
+            {
+
+            }
             _synthesizer.Pause();
             _synthesizer.SpeakAsyncCancelAll();
             _synthesizer.Resume();

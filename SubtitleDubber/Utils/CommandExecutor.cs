@@ -3,23 +3,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
+using SubtitleDubber.Models.Commands;
 
 namespace SubtitleDubber.Utils
 {
     internal class CommandExecutor
     {
-        public static string Execute(string executable, string parameters, string? workingDirectory = null)
+                public static string Execute(Command command)
         {
-
+            command.InitializeArguments();
             using (Process p = new Process())
             {
                 p.StartInfo.UseShellExecute = false;
                 p.StartInfo.CreateNoWindow = true;
-                p.StartInfo.FileName = executable;
-                p.StartInfo.Arguments = parameters;
-if (!string.IsNullOrEmpty(workingDirectory))
+                p.StartInfo.FileName = command.Executable;
+                p.StartInfo.Arguments = ConvertToArgumentString(command.Arguments);
+if (!string.IsNullOrEmpty(command.WorkingDirectory))
                 {
-                    p.StartInfo.WorkingDirectory = workingDirectory;
+                    p.StartInfo.WorkingDirectory = command.WorkingDirectory;
                                     }
                 p.StartInfo.RedirectStandardOutput = true;
 
@@ -29,5 +30,45 @@ if (!string.IsNullOrEmpty(workingDirectory))
                 return output;
             }
         }
+
+        private static string ConvertToArgumentString(List<String> arguments)
+        {
+            return string.Join(" ", arguments);
+        }
+
+        public static string ExecuteSilenceCommand(string inputFileName, long msAtStart, long msAtEnd, string outputFileName)
+        {
+            var command = new SilenceCommand();
+            command.InputFileName = inputFileName;
+            command.OutputFileName = outputFileName;
+            command.MsAtStart = msAtStart;
+            command.MsAtEnd = msAtEnd;
+            return Execute(command);
+        }
+
+        public static string ExecuteSubtitleListCommand(string inputFileName)
+        {
+            var command = new SubtitleListCommand();
+            command.InputFileName = inputFileName;
+            return Execute(command);
+        }
+
+        public static string ExecuteDownloadSubtitleCommand(string inputFileName, string outputFileName, string subtitleFormat, int subtitleTrackId)
+        {
+            var command = new DownloadSubtitleCommand();
+            command.InputFileName = inputFileName;
+            command.OutputFileName = outputFileName;
+            command.SubtitleFormat = subtitleFormat;
+            command.SubtitleTrackId = subtitleTrackId;
+            return Execute(command);
+        }
+
+        public static string ExecuteConcatFilesCommand(List<string> parameters, string directory)
+        {
+            var concatCommand = new SOXCommand();
+            concatCommand.Arguments = parameters;
+            concatCommand.WorkingDirectory = directory;
+            return Execute(concatCommand);
+                    }
     }
 }

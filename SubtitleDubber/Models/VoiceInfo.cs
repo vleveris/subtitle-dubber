@@ -9,12 +9,12 @@ namespace SubtitleDubber.Models
     public class VoiceInfo
     {
 
-        public string Id { get; set; }
-public string Name { get; set; }
-        public string Description { get; set; }
-        public string Language { get; set; }
-        public string Gender { get; set; }
-        public string Age { get; set; }
+        public string Id { get; set; } = null!;
+public string Name { get; set; } = null!;
+        public string Description { get; set; } = null!;
+        public string Language { get; set; } = null!;
+        public string Gender { get; set; } = null!;
+        public string Age { get; set; } = null!;
         public IDictionary<string, string> AdditionalInfo { get; set; }
 
             }

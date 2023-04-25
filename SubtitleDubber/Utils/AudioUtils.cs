@@ -8,6 +8,7 @@ using SubtitleDubber.Helpers;
 using System.Diagnostics;
 using System.Speech.Synthesis;
 using System.Runtime.CompilerServices;
+using SubtitleDubber.Models.Commands;
 
 namespace SubtitleDubber.Utils
 {
@@ -36,15 +37,6 @@ namespace SubtitleDubber.Utils
             File.Move(oldName, newName);
         }
         
-        private void AddSilence(string inputFileName, long msAtStart, long msAtEnd, string outputFileName)
-        {
-            string parameters = inputFileName + " " + outputFileName + " pad ";
-            parameters = InsertSilence(parameters, msAtStart);
-            parameters = parameters + " ";
-            parameters = InsertSilence(parameters, msAtEnd);
-                        CommandExecutor.Execute("sox", parameters);
-                    }
-
         public void CreateSubtitleFiles(List<SubtitleItem> subtitles, string output, bool useSox = true)
         {
             string subtitleText;
@@ -116,37 +108,37 @@ namespace SubtitleDubber.Utils
                     ++forCounter;
                 }
                 var finalFileName = string.Empty;
-                string parameters = string.Empty;
+                var parameters = new List<string>();
                 for (int i = 0; i < forCounter; ++i)
                 {
-                    parameters = string.Empty;
+                    parameters.Clear();
                     for (int j = 0; j < 500 && i * 500 + j < subtitles.Count; ++j)
                     {
                         var fileName = subtitles[i * 500 + j].Index + ".wav";
                         var outputFileName = subtitles[i * 500 + j].Index + "_2.wav";
-                        parameters = parameters + outputFileName + " ";
+                        parameters.Add(outputFileName);
                         if (subtitles[i * 500 + j].Index == 1)
                         {
-                                                AddSilence(output + "\\"+fileName, silences[0], silences[1], output+"\\"+outputFileName);
+CommandExecutor.ExecuteSilenceCommand(output + "\\"+fileName, silences[0], silences[1], output+"\\"+outputFileName);
                                                     }
                         else
                         {
-                            AddSilence(output + "\\" + fileName, 0, silences[subtitles[i * 500 + j].Index], output + "\\" + outputFileName);
+                            CommandExecutor.ExecuteSilenceCommand(output + "\\" + fileName, 0, silences[subtitles[i * 500 + j].Index], output + "\\" + outputFileName);
                                                     }
                     }
                     finalFileName = "final" + (i + 1) + ".wav";
-                    parameters = parameters + finalFileName;
-                    CommandExecutor.Execute("sox", parameters, output);
+                    parameters.Add(finalFileName);
+                    CommandExecutor.ExecuteConcatFilesCommand(parameters, output);
                 }
-                parameters = string.Empty;
+                parameters.Clear();
                 for (int i = 0; i < forCounter; ++i)
                 {
                     var fileName = "final" + (i + 1) + ".wav";
-                    parameters = parameters + fileName + " ";
+                    parameters.Add(fileName);
                 }
                 finalFileName = "final.wav";
-                parameters = parameters + finalFileName;
-                CommandExecutor.Execute("sox", parameters, output);
+                parameters.Add(finalFileName);
+                CommandExecutor.ExecuteConcatFilesCommand(parameters, output);
                 for (int i = 0; i < forCounter; ++i)
                 {
                     RemoveFile(output + "\\" + "final" + (i + 1) + ".wav");
@@ -213,9 +205,7 @@ if (useSox)
 
         public List<SubtitleStreamDescription> GetSubtitleList(string videoFileName)
         {
-            var commandName = "ffprobe";
-            var parameters = "-loglevel error -select_streams s -show_entries stream=index:stream_tags=language:stream_tags=title -of csv=p=0 " + videoFileName;
-var commandOutput = CommandExecutor.Execute(commandName, parameters);
+var commandOutput = CommandExecutor.ExecuteSubtitleListCommand(videoFileName);
             var subtitles = commandOutput.Split("\r\n");
             var descriptionList = new List<SubtitleStreamDescription>();
 
@@ -237,33 +227,6 @@ if (subtitleParts.Length == 3)
             return descriptionList;
         }
 
-        public void DownloadSubtitle(string inputVideoFileName, string outputSubtitleFileName, string subtitleFormat, long subtitleTrackId)
-        {
-            var command = "ffmpeg";
-            var parameters = "-i " + inputVideoFileName + " -map 0:" + subtitleTrackId + " -c:s " + subtitleFormat + " " + outputSubtitleFileName + " -y";
-            CommandExecutor.Execute(command, parameters);
-                    }
-
-private string InsertSilence(string parameters, long ms)
-{
-    var insertion = string.Empty + ms / 1000;
-    long msRemainder = ms % 1000;
-    if (msRemainder!= 0)
-    {
-        insertion= insertion+ ".";
-        if (msRemainder < 10)
-        {
-            insertion= insertion+ "00";
-        }
-        else if (msRemainder < 100)
-        {
-            insertion= insertion+ "0";
-        }
-        insertion= insertion+ msRemainder;
-    }
-    return parameters + insertion;
-    }
-    
     private long CalculateSpeechTime(long previousSilence, long overlap)
         {
             if (overlap>previousSilence)
@@ -276,5 +239,11 @@ else if (previousSilence>=2*overlap)
             }
             return overlap;
         }
+
+        public void DownloadSubtitle(string inputVideoFileName, string outputSubtitleFileName, string subtitleFormat, int subtitleTrackId)
+        {
+            CommandExecutor.ExecuteDownloadSubtitleCommand(inputVideoFileName, outputSubtitleFileName, subtitleFormat, subtitleTrackId);
+        }
+
     }
 }

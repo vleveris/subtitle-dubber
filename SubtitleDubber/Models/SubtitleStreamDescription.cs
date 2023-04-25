@@ -10,8 +10,8 @@ namespace SubtitleDubber.Models
     {
 
 public long Id { set; get; }
-        public string LanguageCode { set; get; }
-        public string Title { set; get; }
+        public string LanguageCode { set; get; } = null!;
+        public string Title { set; get; } = null!;
         public override string ToString()
         {
             var stringOutput = LanguageCode;
