@@ -14,28 +14,6 @@ namespace SubtitleDubber.Services
     {
         private SpeechService _speechService = new();
 
-        private long GetFileDuration(string fileName)
-        {
-            FileInfo fileInfo = new FileInfo(fileName);
-            long length = fileInfo.Length;
-            double fileLength = length;
-            double audioDuration = fileLength / 176400 * 1000;                 // time = FileLength / (Sample Rate * Channels * Bits per sample /8)
-
-            long fileDuration = (long)audioDuration;
-            return fileDuration;
-        }
-
-        private void RemoveFile(string fileName)
-        {
-            FileInfo fileInfo = new FileInfo(fileName);
-            fileInfo.Delete();
-        }
-
-        private void RenameFile(string oldName, string newName)
-        {
-            File.Move(oldName, newName);
-        }
-
         public void CreateSubtitleFiles(List<SubtitleItem> subtitles, string output, bool useSox = true)
         {
             string subtitleText;
@@ -80,7 +58,7 @@ namespace SubtitleDubber.Services
                         silences[0] = msAtStart;
                     }
                 }
-                fileDuration = GetFileDuration(fileName);
+                fileDuration = FileUtils.GetAudioFileDuration(fileName);
                 silenceDuration = subtitleSpeechDuration - fileDuration;
                 if (useSox)
                 {
@@ -140,7 +118,7 @@ namespace SubtitleDubber.Services
                 CommandExecutor.ExecuteConcatFilesCommand(parameters, output);
                 for (int i = 0; i < forCounter; ++i)
                 {
-                    RemoveFile(output + "\\" + "final" + (i + 1) + ".wav");
+                    FileUtils.RemoveFile(output + "\\" + "final" + (i + 1) + ".wav");
                 }
             }
             else
@@ -151,10 +129,10 @@ namespace SubtitleDubber.Services
             {
                 var fileName = output + "\\" + subtitle.Index + ".wav";
                 var outputFileName = output + "\\" + subtitle.Index + "_2.wav";
-                RemoveFile(fileName);
+                FileUtils.RemoveFile(fileName);
                 if (useSox)
                 {
-                    RemoveFile(outputFileName);
+                    FileUtils.RemoveFile(outputFileName);
                 }
             }
         }
@@ -169,7 +147,7 @@ namespace SubtitleDubber.Services
                 _speechService.Speak(text, outputFile);
                 if (duration >= 0)
                 {
-                    long fileDuration = GetFileDuration(outputFile);
+                    long fileDuration = FileUtils.GetAudioFileDuration(outputFile);
                     if (fileDuration > duration)
                     {
                         validDuration = false;
@@ -202,30 +180,6 @@ namespace SubtitleDubber.Services
             return 0;
         }
 
-        public List<SubtitleStreamDescription> GetSubtitleList(string videoFileName)
-        {
-            var commandOutput = CommandExecutor.ExecuteSubtitleListCommand(videoFileName);
-            var subtitles = commandOutput.Split("\r\n");
-            var descriptionList = new List<SubtitleStreamDescription>();
-
-            foreach (var subtitle in subtitles)
-            {
-                if (!string.IsNullOrEmpty(subtitle))
-                {
-                    var description = new SubtitleStreamDescription();
-                    var subtitleParts = subtitle.Split(",");
-                    description.Id = long.Parse(subtitleParts[0]);
-                    description.LanguageCode = subtitleParts[1];
-                    if (subtitleParts.Length == 3)
-                    {
-                        description.Title = subtitleParts[2];
-                    }
-                    descriptionList.Add(description);
-                }
-            }
-            return descriptionList;
-        }
-
         private long CalculateSpeechTime(long previousSilence, long overlap)
         {
             if (overlap > previousSilence)
@@ -237,11 +191,6 @@ namespace SubtitleDubber.Services
                 return 2 * overlap;
             }
             return overlap;
-        }
-
-        public void DownloadSubtitle(string inputVideoFileName, string outputSubtitleFileName, string subtitleFormat, int subtitleTrackId)
-        {
-            CommandExecutor.ExecuteDownloadSubtitleCommand(inputVideoFileName, outputSubtitleFileName, subtitleFormat, subtitleTrackId);
         }
 
     }

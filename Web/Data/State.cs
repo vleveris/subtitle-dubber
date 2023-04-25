@@ -2,21 +2,19 @@
 
 namespace Web.Data
 {
-
     public static class State
     {
-        private static int _appState;
+        private static StateType _appState;
 public static string InputVideoFileName { get; set; }
         public static string OutputVideoFileName { get; set; }
         public static string InputSubtitleFileName { get; set; }
         public static string OutputSubtitleFileName { get; set; }
 
-        public static int AppState
+        public static StateType AppState
         {
             get { return _appState; }
             set
             {
-                // test removed so we get notification every time
                 _appState = value;
                 OnAppStateChanged(_appState);
             }
@@ -24,11 +22,11 @@ public static string InputVideoFileName { get; set; }
 
         public static event EventHandler AppStateChanged;
 
-        private static void OnAppStateChanged(int intValue)
+        private static void OnAppStateChanged(StateType stateTypeValue)
         {
             if (AppStateChanged != null)
             {
-                AppStateChanged(intValue, EventArgs.Empty);
+                AppStateChanged(stateTypeValue, EventArgs.Empty);
             }
         }
     }

@@ -9,7 +9,7 @@
 <PageTitle>Subtitle Dubber</PageTitle>
         <div class="col-md-8 mx-auto">
                 <div class="card" style="margin: auto; max-width: 500px; min-height: 16rem;">
-                    <div class="card-header d-flex">
+        <div class="card-body">
                         <h1>Subtitle Options</h1>
             <label for="subtitle">Select which subtitle stream to use for making audio track:</label>
             <select id="subtitle" @bind="@_selectedSubtitleId" @bind:after="EnableGetSubtitleButton">
@@ -27,77 +27,83 @@
             <select id="conversion" @bind="_selectedSubtitleFormat">
                 <option value="srt">SubRip SRT</option>
             </select>
-            <button class="btn btn-primary align-bottom" type="button" disabled=@_getSubtitleButtonDisabled @onclick="GetSubtitle">Get</button>
+            <button class="btn btn-primary align-bottom" type="button" disabled=@_getSubtitleButtonDisabled @onclick="SelectOutputSubtitleFile">Get</button>
             <p>Or you can attach your own subtitle file:</p>
-            <button class="btn btn-primary align-bottom" type="button" @onclick="SelectSubtitleInputFile">Choose file:</button>
+            <button class="btn btn-primary align-bottom" type="button" @onclick="SelectInputSubtitleFile">Choose file</button>
             <label>Selected file: @State.InputSubtitleFileName</label>
             <hr />
 
-            <button class="btn btn-primary align-bottom" type="button" @onclick="SelectVideoOutputFile">Choose output video file:</button>
+            <button class="btn btn-primary align-bottom" type="button" @onclick="SelectOutputVideoFile">Choose output video file</button>
             <label>Selected file: @State.OutputVideoFileName</label>
 
-            <button class="btn btn-primary align-bottom" type="button" @onclick="AddAudioToVideo" disabled="@(string.IsNullOrEmpty(State.OutputVideoFileName) || (_getSubtitleButtonDisabled && string.IsNullOrEmpty(State.InputSubtitleFileName)))">Generate</button>
+            <button class="btn btn-primary align-bottom" type="button" @onclick="DubAsync" disabled="@(string.IsNullOrEmpty(State.OutputVideoFileName) || (_getSubtitleButtonDisabled && string.IsNullOrEmpty(State.InputSubtitleFileName)))">Generate</button>
 
                                 </div>
+        <NavLink class="btn btn-primary" href="/">Go Back</NavLink>
     </div>
 </div>
 @code {
     private DubbingService _dubbingService = new();
+    private SubtitleService _subtitleService = new();
     private List<SubtitleStreamDescription> _subtitleList = new();
     private int _selectedSubtitleId = -1;
     private string _selectedSubtitleFormat = "srt";
     private bool _getSubtitleButtonDisabled = true;
+    private const string TemporarySubtitleFileName = "subtitle.srt";
+    private const string PathSeparator = "\\";
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        _subtitleList = _dubbingService.GetSubtitleList(State.InputVideoFileName);
+        _subtitleList = _subtitleService.GetSubtitleList(State.InputVideoFileName);
         State.AppStateChanged += State_AppStateChanged;
-        State.OutputVideoFileName = string.Empty;
-        State.OutputSubtitleFileName = string.Empty;
         State.InputSubtitleFileName = string.Empty;
+        State.OutputSubtitleFileName = string.Empty;
     }
 
-    private void AddAudioToVideo()
+    private async Task DubAsync()
     {
-        //        string tempDirectory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+        //        var tempDirectory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
         var tempDirectory = "C:\\hardas\\SubtitleDubber";
         Directory.CreateDirectory(tempDirectory);
         var inputSubtitleFileName = State.InputSubtitleFileName;
         if (string.IsNullOrEmpty(inputSubtitleFileName))
         {
-            inputSubtitleFileName = tempDirectory + "\\subtitle.srt";
-            _dubbingService.DownloadSubtitle(State.InputVideoFileName, inputSubtitleFileName, _selectedSubtitleFormat, _selectedSubtitleId);
+            inputSubtitleFileName = tempDirectory + PathSeparator + TemporarySubtitleFileName;
+            _subtitleService.DownloadSubtitle(State.InputVideoFileName, inputSubtitleFileName, _selectedSubtitleFormat, _selectedSubtitleId);
         }
         var parser = new SrtParser();
         var subtitles = parser.Parse(inputSubtitleFileName);
         var outputVideoFileName = tempDirectory + "\\video.mkv";
-        _dubbingService.CreateSubtitleFiles(subtitles, tempDirectory);
+        //https://blog.stephencleary.com/2012/02/reporting-progress-from-async-tasks.html
+        // for progress reports
+
+        await Task.Run(() => _dubbingService.CreateSubtitleFiles(subtitles, tempDirectory));
     }
 
-    private void SelectSubtitleInputFile()
+    private void SelectInputSubtitleFile()
     {
-        State.AppState = 3;
+        State.AppState = StateType.SelectInputSubtitleFile;
     }
 
-    private void SelectVideoOutputFile()
+    private void SelectOutputVideoFile()
     {
-        State.AppState = 2;
+        State.AppState = StateType.SelectOutputVideoFile;
     }
 
-    private void GetSubtitle()
+    private void SelectOutputSubtitleFile()
     {
-        State.AppState = 4;
+        State.AppState = StateType.SelectOutputSubtitleFile;
     }
 
     private void State_AppStateChanged(object sender, EventArgs e)
     {
-        int appState = (int)sender;
+        StateType appState = (StateType)sender;
         switch (appState)
         {
-            case 5:
+            case StateType.SelectedOutputSubtitleFile:
                 if (!string.IsNullOrEmpty(State.OutputSubtitleFileName))
                 {
-                    _dubbingService.DownloadSubtitle(State.InputVideoFileName, State.OutputSubtitleFileName, _selectedSubtitleFormat, _selectedSubtitleId);
+                    _subtitleService.DownloadSubtitle(State.InputVideoFileName, State.OutputSubtitleFileName, _selectedSubtitleFormat, _selectedSubtitleId);
                 }
                 break;
             default:

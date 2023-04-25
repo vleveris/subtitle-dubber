@@ -25,19 +25,19 @@ namespace SubtitleDubberApp
 
         private void State_AppStateChanged(object sender, EventArgs e)
         {
-            int appState = (int)sender;
+            StateType appState = (StateType)sender;
             switch (appState)
             {
-                case 1:
+                case StateType.SelectInputVideoFile:
                     GetInputVideoFileName();
                     break;
-                case 2:
+                case StateType.SelectOutputVideoFile:
                     GetOutputVideoFileName();
                     break;
-                case 3:
+                case StateType.SelectInputSubtitleFile:
                     GetInputSubtitleFileName();
                     break;
-                case 4:
+                case StateType.SelectOutputSubtitleFile:
                     GetOutputSubtitleFileName();
                     break;
                 default:
@@ -47,7 +47,7 @@ namespace SubtitleDubberApp
 
         private void GetInputVideoFileName()
         {
-                OpenFileDialog openFileDialog = new OpenFileDialog();
+                var openFileDialog = new OpenFileDialog();
             if (openFileDialog.ShowDialog() == true)
             {
                 State.InputVideoFileName = openFileDialog.FileName;
@@ -56,7 +56,7 @@ namespace SubtitleDubberApp
 
         private void GetOutputVideoFileName()
         {
-            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            var saveFileDialog = new SaveFileDialog();
             if (saveFileDialog.ShowDialog() == true)
             {
                 State.OutputVideoFileName = saveFileDialog.FileName;
@@ -65,7 +65,7 @@ namespace SubtitleDubberApp
 
         private void GetInputSubtitleFileName()
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
+            var openFileDialog = new OpenFileDialog();
             if (openFileDialog.ShowDialog() == true)
             {
                 State.InputSubtitleFileName = openFileDialog.FileName;
@@ -74,11 +74,11 @@ namespace SubtitleDubberApp
 
         private void GetOutputSubtitleFileName()
         {
-            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            var saveFileDialog = new SaveFileDialog();
             if (saveFileDialog.ShowDialog() == true)
             {
                 State.OutputSubtitleFileName = saveFileDialog.FileName;
-                State.AppState = 5;
+                State.AppState = StateType.SelectedOutputSubtitleFile;
             }
                     }
 
