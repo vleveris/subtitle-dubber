@@ -28,7 +28,7 @@ namespace SubtitleDubber
             Parsers.SrtParser parser = new Parsers.SrtParser();
             var subtitles = parser.Parse(input);
             var _dubbingService = new DubbingService();
-            _dubbingService.CreateSubtitleFiles(subtitles, output);
+//            _dubbingService.CreateSubtitleFiles(subtitles, output);
             }
     }
 }

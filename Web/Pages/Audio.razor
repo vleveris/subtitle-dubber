@@ -23,61 +23,83 @@
                     }
                 }
             </select>
-            <label for="conversion">Subtitle format:</label>
-            <select id="conversion" @bind="_selectedSubtitleFormat">
-                <option value="srt">SubRip SRT</option>
+            <label for="subtitleFormat">Subtitle format:</label>
+            <select id="subtitleFormat" @bind="_selectedSubtitleFormat">
+                @if (_supportedSubtitleFormats != null)
+                {
+                    foreach (var format in _supportedSubtitleFormats)
+                    {
+                        <option value="@format.Extension">@format</option>
+                    }
+                }
             </select>
-            <button class="btn btn-primary align-bottom" type="button" disabled=@_getSubtitleButtonDisabled @onclick="SelectOutputSubtitleFile">Get</button>
-            <p>Or you can attach your own subtitle file:</p>
-            <button class="btn btn-primary align-bottom" type="button" @onclick="SelectInputSubtitleFile">Choose file</button>
-            <label>Selected file: @State.InputSubtitleFileName</label>
+            <button class="btn btn-primary align-bottom" type="button" disabled=@_isSubtitleButtonDisabled @onclick="SelectOutputSubtitleFile">Extract</button>
+            <p>Or you can attach your own subtitle file.</p>
+            <button class="btn btn-primary align-bottom" type="button" @onclick="SelectInputSubtitleFile">@SelectFileButtonText @State.InputSubtitleFileName</button>
             <hr />
-
-            <button class="btn btn-primary align-bottom" type="button" @onclick="SelectOutputVideoFile">Choose output video file</button>
-            <label>Selected file: @State.OutputVideoFileName</label>
-
-            <button class="btn btn-primary align-bottom" type="button" @onclick="DubAsync" disabled="@(string.IsNullOrEmpty(State.OutputVideoFileName) || (_getSubtitleButtonDisabled && string.IsNullOrEmpty(State.InputSubtitleFileName)))">Generate</button>
-
+<p>Select path where to save modified video file.</p>
+            <button class="btn btn align-bottom" type="button" @onclick="SelectOutputVideoFile">@SelectFileButtonText @State.OutputVideoFileName</button>
+<button class="btn btn-primary align-bottom" type="button" @onclick="DubAsync" disabled="@((string.IsNullOrEmpty(State.OutputVideoFileName) || State.OutputVideoFileName == NoFileSelected) || (_isSubtitleButtonDisabled && string.IsNullOrEmpty(State.InputSubtitleFileName)) || _isDubbingInProgress)">Dub</button>
+            @if (_isDubbingInProgress)
+            {
+                            <div class="progress mt-2" style="height: 2em;">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width: @(_progressValue)%; background-color: #204066;" aria-valuenow="@_progressValue" aria-valuemin="0" aria-valuemax="100">
+                    </div>
+                    <div>
+                        <span id="progressLabel" class="text-muted">Generating audio track...</span>
+                    </div>
+                </div>
+            }
                                 </div>
         <NavLink class="btn btn-primary" href="/">Go Back</NavLink>
     </div>
 </div>
+
 @code {
+    // https://swharden.com/blog/2022-05-29-blazor-loading-progress/
+
     private DubbingService _dubbingService = new();
     private SubtitleService _subtitleService = new();
     private List<SubtitleStreamDescription> _subtitleList = new();
-    private int _selectedSubtitleId = -1;
-    private string _selectedSubtitleFormat = "srt";
-    private bool _getSubtitleButtonDisabled = true;
-    private const string TemporarySubtitleFileName = "subtitle.srt";
-    private const string PathSeparator = "\\";
+    private int _selectedSubtitleId = -1, _progressValue = 0;
+    private bool _isSubtitleButtonDisabled = true, _isDubbingInProgress = false;
+    private const string NoFileSelected = "No file selected";
+    private const string SelectFileButtonText = "Select file:";
+    private List<FileFormat> _supportedSubtitleFormats = new List<FileFormat>();
+    private readonly FileFormat DefaultSubtitleFormat = new(FileFormat.DefaultSubtitleFileExtension, "SubRip");
+    private string _selectedSubtitleFormat;
 
     protected override void OnInitialized()
     {
         _subtitleList = _subtitleService.GetSubtitleList(State.InputVideoFileName);
         State.AppStateChanged += State_AppStateChanged;
-        State.InputSubtitleFileName = string.Empty;
-        State.OutputSubtitleFileName = string.Empty;
+        State.InputSubtitleFileName = NoFileSelected;
+        State.OutputSubtitleFileName = NoFileSelected;
+        if (string.IsNullOrEmpty(State.OutputVideoFileName))
+        {
+            State.OutputVideoFileName = NoFileSelected;
+        }
+        FillSupportedFormats();
     }
 
     private async Task DubAsync()
     {
-        //        var tempDirectory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-        var tempDirectory = "C:\\hardas\\SubtitleDubber";
-        Directory.CreateDirectory(tempDirectory);
-        var inputSubtitleFileName = State.InputSubtitleFileName;
+        _isDubbingInProgress = true;
+        var inputSubtitleFileName = State.InputSubtitleFileName != NoFileSelected ? State.InputSubtitleFileName : string.Empty;
+        var progress = new Progress<int>(percent =>
+        {
+            _progressValue = percent;
+            StateHasChanged();
+        });
         if (string.IsNullOrEmpty(inputSubtitleFileName))
         {
-            inputSubtitleFileName = tempDirectory + PathSeparator + TemporarySubtitleFileName;
-            _subtitleService.DownloadSubtitle(State.InputVideoFileName, inputSubtitleFileName, _selectedSubtitleFormat, _selectedSubtitleId);
+            await Task.Run(() => _dubbingService.Dub(_selectedSubtitleId, State.InputVideoFileName, State.OutputVideoFileName, progress));
+                    }
+        else
+        {
+            await Task.Run(() => _dubbingService.Dub(inputSubtitleFileName, State.OutputVideoFileName, progress));
         }
-        var parser = new SrtParser();
-        var subtitles = parser.Parse(inputSubtitleFileName);
-        var outputVideoFileName = tempDirectory + "\\video.mkv";
-        //https://blog.stephencleary.com/2012/02/reporting-progress-from-async-tasks.html
-        // for progress reports
-
-        await Task.Run(() => _dubbingService.CreateSubtitleFiles(subtitles, tempDirectory));
+        _isDubbingInProgress = false;
     }
 
     private void SelectInputSubtitleFile()
@@ -113,6 +135,12 @@
 
     private void EnableGetSubtitleButton()
     {
-        _getSubtitleButtonDisabled = _selectedSubtitleId < 0;
+        _isSubtitleButtonDisabled = _selectedSubtitleId < 0;
+    }
+
+    private void FillSupportedFormats()
+    {
+        _supportedSubtitleFormats.Add(DefaultSubtitleFormat);
+        _selectedSubtitleFormat = DefaultSubtitleFormat.Extension;
     }
         }

@@ -24,10 +24,22 @@ namespace SubtitleDubber.Utils
             fileInfo.Delete();
         }
 
+        public static void RemoveFiles(List<string> fileNames)
+        {
+            foreach (var fileName in fileNames)
+            {
+                RemoveFile(fileName);
+                            }
+        }
+
         public static void RenameFile(string oldName, string newName)
         {
             File.Move(oldName, newName);
         }
 
+        public static void CreateDirectory(string directoryName)
+        {
+            Directory.CreateDirectory(directoryName);
+        }
     }
 }
