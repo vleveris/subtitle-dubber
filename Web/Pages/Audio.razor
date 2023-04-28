@@ -10,7 +10,7 @@
         <div class="col-md-8 mx-auto">
                 <div class="card" style="margin: auto; max-width: 500px; min-height: 16rem;">
         <div class="card-body">
-                        <h1>Subtitle Options</h1>
+                        <h2>Subtitle Options</h2>
             <label for="subtitle">Select which subtitle stream to use for making audio track:</label>
             <select id="subtitle" @bind="@_selectedSubtitleId" @bind:after="EnableGetSubtitleButton">
                 <option value="-1"></option>
@@ -36,7 +36,12 @@
             <button class="btn btn-primary align-bottom" type="button" disabled=@_isSubtitleButtonDisabled @onclick="SelectOutputSubtitleFile">Extract</button>
             <p>Or you can attach your own subtitle file.</p>
             <button class="btn btn-primary align-bottom" type="button" @onclick="SelectInputSubtitleFile">@SelectFileButtonText @State.InputSubtitleFileName</button>
-            <hr />
+<h2>Audio track options</h2>
+            <input type="radio" name="useSox" @bind="@_useSox" checked="@_useSox" />
+<label>Use SOX library (more accurate, but slower). SOX binaries should be provided in PATH system variable.</label>
+            <input type="radio" name="useSox" checked="@(!_useSox)" @onchange="@(() => _useSox = false)" />
+            <label>Use native Windows speech library (less accurate, but faster).</label>
+
 <p>Select path where to save modified video file.</p>
             <button class="btn btn align-bottom" type="button" @onclick="SelectOutputVideoFile">@SelectFileButtonText @State.OutputVideoFileName</button>
 <button class="btn btn-primary align-bottom" type="button" @onclick="DubAsync" disabled="@((string.IsNullOrEmpty(State.OutputVideoFileName) || State.OutputVideoFileName == NoFileSelected) || (_isSubtitleButtonDisabled && string.IsNullOrEmpty(State.InputSubtitleFileName)) || _isDubbingInProgress)">Dub</button>
@@ -62,7 +67,7 @@
     private SubtitleService _subtitleService = new();
     private List<SubtitleStreamDescription> _subtitleList = new();
     private int _selectedSubtitleId = -1, _progressValue = 0;
-    private bool _isSubtitleButtonDisabled = true, _isDubbingInProgress = false;
+    private bool _isSubtitleButtonDisabled = true, _isDubbingInProgress = false, _useSox = true;
     private const string NoFileSelected = "No file selected";
     private const string SelectFileButtonText = "Select file:";
     private List<FileFormat> _supportedSubtitleFormats = new List<FileFormat>();
@@ -93,11 +98,11 @@
         });
         if (string.IsNullOrEmpty(inputSubtitleFileName))
         {
-            await Task.Run(() => _dubbingService.Dub(_selectedSubtitleId, State.InputVideoFileName, State.OutputVideoFileName, progress));
+            await Task.Run(() => _dubbingService.Dub(_selectedSubtitleId, State.InputVideoFileName, State.OutputVideoFileName, _useSox, progress));
                     }
         else
         {
-            await Task.Run(() => _dubbingService.Dub(inputSubtitleFileName, State.OutputVideoFileName, progress));
+            await Task.Run(() => _dubbingService.Dub(inputSubtitleFileName, State.OutputVideoFileName, _useSox, progress));
         }
         _isDubbingInProgress = false;
     }

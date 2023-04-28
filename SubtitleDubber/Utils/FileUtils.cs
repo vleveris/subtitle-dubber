@@ -24,6 +24,7 @@ namespace SubtitleDubber.Utils
             fileInfo.Delete();
         }
 
+
         public static void RemoveFiles(List<string> fileNames)
         {
             foreach (var fileName in fileNames)
@@ -41,5 +42,16 @@ namespace SubtitleDubber.Utils
         {
             Directory.CreateDirectory(directoryName);
         }
+
+        public static void RemoveDirectory(string directoryName)
+        {
+            Directory.Delete(directoryName);
+        }
+
+        public static bool Exists(string fileName)
+        {
+            return File.Exists(fileName);
+        }
+
     }
 }

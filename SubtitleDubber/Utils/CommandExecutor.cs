@@ -36,7 +36,7 @@ if (!string.IsNullOrEmpty(command.WorkingDirectory))
             return string.Join(" ", arguments);
         }
 
-        public static string ExecuteSilenceCommand(string inputFileName, long msAtStart, long msAtEnd, string outputFileName)
+        public static string ExecuteSilenceCommand(string inputFileName, string outputFileName, long msAtStart, long msAtEnd)
         {
             var command = new SilenceCommand();
             command.InputFileName = inputFileName;

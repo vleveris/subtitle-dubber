@@ -52,7 +52,7 @@ if (key != "Name" && key != "Gender" && key != "Age" && key != "Language")
             <input type="range" min="0" max="100" class="slider" @bind = "_speed" @bind:after="SetSpeed" step="5" title="Speed"/>
             <input type="range" min="0" max="100" class="slider" @bind="_volume" @bind:after="SetVolume" title="Volume"/>
 <hr/>
-            <button class="btn btn-primary align-bottom" type="button" disabled="@string.IsNullOrEmpty(State.InputVideoFileName)" @onclick="NavigateToAudioPage">Proceed</button>
+            <button class="btn btn-primary align-bottom" type="button" disabled="@(string.IsNullOrEmpty(State.InputVideoFileName) || State.InputVideoFileName == NoFileSelected)" @onclick="NavigateToAudioPage">Proceed</button>
         </div>
     </div>
 </div>
@@ -62,8 +62,7 @@ if (key != "Name" && key != "Gender" && key != "Age" && key != "Language")
     private int _speed = 50, _volume=100;
     private VoiceInfo _selectedVoice;
     private SpeechService _speechService = new();
-    private const string NoFileSelected = "No file selected";
-    private const string SelectFileButtonText = "Select file:";
+    private const string NoFileSelected = "No file selected", SelectFileButtonText = "Select file:";
 
     protected override void OnInitialized()
     {
