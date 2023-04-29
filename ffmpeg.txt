@@ -1,1 +1,0 @@
-ffmpeg -i video.mkv -i audio.wav -c:v copy -filter_complex "[1:a] adelay=2100|2100 [voice]; [0:a]volume=0.5 [voice] amix=inputs=2:duration=longest [audio_out]" -map 0 -map "[audio_out]" -y output.mkv

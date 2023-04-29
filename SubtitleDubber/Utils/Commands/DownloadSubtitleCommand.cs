@@ -9,6 +9,7 @@ namespace SubtitleDubber.Utils.Commands
         private const string SubtitleStreamOption = "-c:s";
         private const string OverrideOption = "-y";
         private readonly string[] AvailableSubtitleFormats = { "srt" };
+
         public string InputFileName { get; set; } = null!;
         public string OutputFileName { get; set; } = null!;
         public int SubtitleTrackId { get; set; }

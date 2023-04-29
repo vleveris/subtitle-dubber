@@ -100,5 +100,16 @@ if (parseResult)
             concatCommand.WorkingDirectory = directory;
             Execute(concatCommand);
                     }
+
+public void ExecuteMergeAudioCommand(string inputVideoFileName, string inputAudioFileName, string outputVideoFileName, int dubbingAudioDelay, int originalAudioVolume)
+        {
+            var command = new MergeAudioCommand();
+            command.InputVideoFileName = inputVideoFileName;
+            command.InputAudioFileName = inputAudioFileName;
+            command.OutputVideoFileName = outputVideoFileName;
+            command.DubbingAudioDelay = dubbingAudioDelay;
+            command.OriginalAudioVolume = originalAudioVolume;
+            Execute(command);
+        }
     }
 }

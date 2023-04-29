@@ -42,7 +42,11 @@
             <input type="radio" name="useSox" checked="@(!_useSox)" @onchange="@(() => _useSox = false)" />
             <label>Use native Windows speech library (less accurate, but faster).</label>
 
-<p>Select path where to save modified video file.</p>
+            <label class="form-label" for="delay">Dubbing audio track delay (voice-over effect) in milliseconds:</label>
+            <input type="number" id="delay" class="form-control" style="margin-bottom: 1rem;" @bind="_delay" />
+            <input type="range" min="0" max="100" class="slider" @bind="_originalTrackVolume" step="10" title="Original audio track volume" />
+
+            <p>Select path where to save modified video file.</p>
             <button class="btn btn align-bottom" type="button" @onclick="SelectOutputVideoFile">@SelectFileButtonText @State.OutputVideoFileName</button>
 <button class="btn btn-primary align-bottom" type="button" @onclick="DubAsync" disabled="@((string.IsNullOrEmpty(State.OutputVideoFileName) || State.OutputVideoFileName == NoFileSelected) || (_isSubtitleButtonDisabled && string.IsNullOrEmpty(State.InputSubtitleFileName)) || _isDubbingInProgress)">Dub</button>
             @if (_isDubbingInProgress)
@@ -61,7 +65,6 @@
 </div>
 
 @code {
-    // https://swharden.com/blog/2022-05-29-blazor-loading-progress/
 
     private DubbingService _dubbingService = new();
     private SubtitleService _subtitleService = new();
@@ -73,6 +76,7 @@
     private List<FileFormat> _supportedSubtitleFormats = new List<FileFormat>();
     private readonly FileFormat DefaultSubtitleFormat = new(FileFormat.DefaultSubtitleFileExtension, "SubRip");
     private string _selectedSubtitleFormat;
+private int _delay = 500, _originalTrackVolume = 100;
 
     protected override void OnInitialized()
     {
@@ -98,11 +102,11 @@
         });
         if (string.IsNullOrEmpty(inputSubtitleFileName))
         {
-            await Task.Run(() => _dubbingService.Dub(_selectedSubtitleId, State.InputVideoFileName, State.OutputVideoFileName, _useSox, progress));
+            await Task.Run(() => _dubbingService.Dub(_selectedSubtitleId, State.InputVideoFileName, State.OutputVideoFileName, _useSox, _delay, _originalTrackVolume, progress));
                     }
         else
         {
-            await Task.Run(() => _dubbingService.Dub(inputSubtitleFileName, State.OutputVideoFileName, _useSox, progress));
+            await Task.Run(() => _dubbingService.Dub(inputSubtitleFileName, State.InputVideoFileName, State.OutputVideoFileName, _useSox, _delay, _originalTrackVolume, progress));
         }
         _isDubbingInProgress = false;
     }

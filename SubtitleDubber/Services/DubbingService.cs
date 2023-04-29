@@ -27,7 +27,7 @@ namespace SubtitleDubber.Services
         private long[] _silences;
         private FileUtils _fileUtils = new();
 
-        public void Dub(int subtitleTrackId, string inputVideoFileName, string outputVideoFileName, bool useSox, IProgress<int> progress)
+        public void Dub(int subtitleTrackId, string inputVideoFileName, string outputVideoFileName, bool useSox, int delay, int originalTrackVolume, IProgress<int> progress)
         {
             //        _tempDirectoryName = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             _tempDirectoryName = "C:\\hardas\\SubtitleDubber";
@@ -35,10 +35,10 @@ namespace SubtitleDubber.Services
             var inputSubtitleFileName = _tempDirectoryName + Path.DirectorySeparatorChar + TemporarySubtitleFileName;
             _subtitleService.DownloadSubtitle(inputVideoFileName, inputSubtitleFileName, FileFormat.DefaultSubtitleFileExtension, subtitleTrackId);
             _tempFiles.Add(inputSubtitleFileName);
-            Dub(inputSubtitleFileName, outputVideoFileName, useSox, progress);
+            Dub(inputSubtitleFileName, inputVideoFileName, outputVideoFileName, useSox, delay, originalTrackVolume, progress);
         }
 
-        public void Dub(string inputSubtitleFileName, string outputVideoFileName, bool useSox, IProgress<int> progress)
+        public void Dub(string inputSubtitleFileName, string inputVideoFileName, string outputVideoFileName, bool useSox, int delay, int originalTrackVolume, IProgress<int> progress)
         {
                 //        _tempDirectory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
                 _tempDirectoryName = "C:\\hardas\\SubtitleDubber";
@@ -66,6 +66,9 @@ namespace SubtitleDubber.Services
             {
                 GenerateAudioTrackFromBuilder(progress);
             }
+                var executor = new CommandExecutor();
+                var inputAudioFileName = _tempDirectoryName + Path.DirectorySeparatorChar + FinalFileNameStart + WaveFileExtension;
+                executor.ExecuteMergeAudioCommand(inputVideoFileName, inputAudioFileName, outputVideoFileName, delay, originalTrackVolume);
             }
             _fileUtils.RemoveFiles(_tempFiles);
         }
