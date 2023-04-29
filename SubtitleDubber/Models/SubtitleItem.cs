@@ -3,7 +3,7 @@ using SubtitleDubber.Helpers;
 
 namespace SubtitleDubber.Models
 {
-    public class SubtitleItem
+    public class SubtitleItem : IComparable
     {
         private const string NewLine = "\r\n";
 
@@ -79,6 +79,17 @@ public SubtitleItem()
                 {
                     return (_index + Text).GetHashCode();
                 }
+
+        #region IComparable Members
+
+        public int CompareTo(object obj)
+        {
+            var subtitle = (SubtitleItem)obj;
+
+            return _index.CompareTo(subtitle._index);
+        }
+
+        #endregion
 
     }
 }

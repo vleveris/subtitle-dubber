@@ -8,6 +8,7 @@ namespace SubtitleDubber.Services
     {
         private SpeechSynthesizer _synthesizer = new();
         private SpeechAudioFormatInfo _synthFormat = new(44100, AudioBitsPerSample.Sixteen, AudioChannel.Stereo);
+public const int MaxRate = 10, MinRate = -10, DefaultRate = MinRate + MaxRate, MinVolume = 0, MaxVolume = 100;
 
         public List<Models.VoiceInfo> GetInstalledVoices()
         {
@@ -36,7 +37,14 @@ namespace SubtitleDubber.Services
 
         public void SetVoice(string name)
         {
-            _synthesizer.SelectVoice(name);
+            try
+            {
+                _synthesizer.SelectVoice(name);
+            }
+            catch (ArgumentException)
+            {
+                throw;
+            }
         }
 
         public void Speak(string text)
@@ -52,7 +60,7 @@ namespace SubtitleDubber.Services
             _synthesizer.Pause();
             _synthesizer.SpeakAsyncCancelAll();
             _synthesizer.Resume();
-            _synthesizer.SpeakAsync(text);
+                _synthesizer.SpeakAsync(text);
         }
 
         public void Speak(string text, string fileName)
@@ -78,12 +86,23 @@ namespace SubtitleDubber.Services
 
         public void IncreaseRate()
         {
-            ++_synthesizer.Rate;
+if (_synthesizer.Rate < MaxRate)
+            {
+                ++_synthesizer.Rate;
+            }
+        }
+
+        public void DecreaseRate()
+        {
+            if (_synthesizer.Rate > MinRate)
+            {
+                --_synthesizer.Rate;
+            }
         }
 
         public void SetRateToDefault()
         {
-            _synthesizer.Rate = 0;
+            _synthesizer.Rate = DefaultRate;
         }
 
         public int GetRate()
@@ -93,11 +112,24 @@ namespace SubtitleDubber.Services
 
         public void SetRate(int rate)
         {
+if (rate > MaxRate || rate < MinRate)
+            {
+                throw new ArgumentOutOfRangeException("Rate must be between " + MinRate + " and " + MaxRate + ".");
+            }
             _synthesizer.Rate = rate;
+        }
+
+        public int GetVolume()
+        {
+            return _synthesizer.Volume;
         }
 
         public void SetVolume(int volume)
         {
+            if (volume > MaxRate || volume < MinVolume)
+            {
+                throw new ArgumentOutOfRangeException("Volume must be between " + MinVolume + " and " + MaxVolume + ".");
+            }
             _synthesizer.Volume = volume;
         }
 

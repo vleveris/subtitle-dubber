@@ -1,4 +1,6 @@
-﻿namespace SubtitleDubber.Helpers
+﻿using SubtitleDubber.Validators;
+
+namespace SubtitleDubber.Helpers
 {
     internal static class IntExtensions
     {
@@ -24,7 +26,7 @@
 
         public static bool IsValidIndex(this int source)
         {
-            return source >=1;
+            return source >= SubtitlesValidator.FirstIndex;
         }
     }
 }

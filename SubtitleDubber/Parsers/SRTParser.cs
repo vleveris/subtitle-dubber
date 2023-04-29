@@ -7,8 +7,6 @@ namespace SubtitleDubber.Parsers
 {
     public class SrtParser : ISubtitleParser
     {
-        private const string NewLine = "\n";
-        private const string ItemDelimiter = NewLine + NewLine;
         public string FileExtension { get; set; } = ".srt";
 
         public List<SubtitleItem> Parse(string filePath)
@@ -19,7 +17,10 @@ namespace SubtitleDubber.Parsers
             }
 
             var fileContents = File.ReadAllText(filePath);
-            var textItems = GetTextItems(fileContents);
+        string[] newLines = { "\n", "\r\n" };
+        string[] itemDelimiters = { newLines[0] + newLines[0], newLines[1] + newLines[1] };
+
+        var textItems = GetTextItems(fileContents, itemDelimiters);
             var items = new List<SubtitleItem>();
             foreach (var textItem in textItems)
             {
@@ -28,7 +29,7 @@ namespace SubtitleDubber.Parsers
             return items;
         }
 
-        private static IEnumerable<string> GetTextItems(string fileContents)
+        private static IEnumerable<string> GetTextItems(string fileContents, string[] itemDelimiters)
         {
             fileContents = fileContents?.Trim();
 
@@ -37,7 +38,7 @@ namespace SubtitleDubber.Parsers
                 return Enumerable.Empty<string>();
             }
 
-            return Regex.Split(fileContents, ItemDelimiter);
+            return fileContents.Split(itemDelimiters, StringSplitOptions.None);
         }
 
 }

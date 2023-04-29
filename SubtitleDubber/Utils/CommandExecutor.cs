@@ -4,12 +4,15 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using SubtitleDubber.Utils.Commands;
+using SubtitleDubber.Models;
 
 namespace SubtitleDubber.Utils
 {
     internal class CommandExecutor
     {
-                public static string Execute(Command command)
+        private const char CSVDelimiter = ',';
+
+        public string Execute(Command command)
         {
             command.InitializeArguments();
             using (Process p = new Process())
@@ -31,44 +34,71 @@ if (!string.IsNullOrEmpty(command.WorkingDirectory))
             }
         }
 
-        private static string ConvertToArgumentString(List<String> arguments)
+        private string ConvertToArgumentString(List<String> arguments)
         {
             return string.Join(" ", arguments);
         }
 
-        public static string ExecuteSilenceCommand(string inputFileName, string outputFileName, long msAtStart, long msAtEnd)
+        public void ExecuteSilenceCommand(string inputFileName, string outputFileName, long msAtStart, long msAtEnd)
         {
             var command = new SilenceCommand();
             command.InputFileName = inputFileName;
             command.OutputFileName = outputFileName;
             command.MsAtStart = msAtStart;
             command.MsAtEnd = msAtEnd;
-            return Execute(command);
+            Execute(command);
         }
 
-        public static string ExecuteSubtitleListCommand(string inputFileName)
+        public List<SubtitleStreamDescription> ExecuteSubtitleListCommand(string inputFileName)
         {
             var command = new SubtitleListCommand();
             command.InputFileName = inputFileName;
-            return Execute(command);
+            var commandOutput = Execute(command);
+            var subtitles = commandOutput.Split(Environment.NewLine);
+            var descriptionList = new List<SubtitleStreamDescription>();
+
+            foreach (var subtitle in subtitles)
+            {
+                if (!string.IsNullOrEmpty(subtitle))
+                {
+                    var description = new SubtitleStreamDescription();
+                    var subtitleParts = subtitle.Split(CSVDelimiter);
+                    if (subtitleParts.Length > 1)
+                    {
+                        long parseValue;
+                        var parseResult = long.TryParse(subtitleParts[0], out parseValue);
+if (parseResult)
+                        {
+                            description.Id = parseValue;
+                            description.LanguageCode = subtitleParts[1];
+                    }
+                    if (subtitleParts.Length == 3)
+                    {
+                        description.Title = subtitleParts[2];
+                    }
+                    descriptionList.Add(description);
+                    }
+                }
+            }
+            return descriptionList;
         }
 
-        public static string ExecuteDownloadSubtitleCommand(string inputFileName, string outputFileName, string subtitleFormat, int subtitleTrackId)
+        public void ExecuteDownloadSubtitleCommand(string inputFileName, string outputFileName, string subtitleFormat, int subtitleTrackId)
         {
             var command = new DownloadSubtitleCommand();
             command.InputFileName = inputFileName;
             command.OutputFileName = outputFileName;
             command.SubtitleFormat = subtitleFormat;
             command.SubtitleTrackId = subtitleTrackId;
-            return Execute(command);
+            Execute(command);
         }
 
-        public static string ExecuteConcatFilesCommand(List<string> parameters, string directory)
+        public void ExecuteConcatFilesCommand(List<string> parameters, string directory)
         {
             var concatCommand = new SOXCommand();
             concatCommand.Arguments = parameters;
             concatCommand.WorkingDirectory = directory;
-            return Execute(concatCommand);
+            Execute(concatCommand);
                     }
     }
 }

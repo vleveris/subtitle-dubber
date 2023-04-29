@@ -12,31 +12,12 @@ namespace SubtitleDubber.Services
     {
         public List<SubtitleStreamDescription> GetSubtitleList(string videoFileName)
         {
-            var commandOutput = CommandExecutor.ExecuteSubtitleListCommand(videoFileName);
-            var subtitles = commandOutput.Split("\r\n");
-            var descriptionList = new List<SubtitleStreamDescription>();
-
-            foreach (var subtitle in subtitles)
-            {
-                if (!string.IsNullOrEmpty(subtitle))
-                {
-                    var description = new SubtitleStreamDescription();
-                    var subtitleParts = subtitle.Split(",");
-                    description.Id = long.Parse(subtitleParts[0]);
-                    description.LanguageCode = subtitleParts[1];
-                    if (subtitleParts.Length == 3)
-                    {
-                        description.Title = subtitleParts[2];
-                    }
-                    descriptionList.Add(description);
-                }
-            }
-            return descriptionList;
+            return new CommandExecutor().ExecuteSubtitleListCommand(videoFileName);
         }
 
         public void DownloadSubtitle(string inputVideoFileName, string outputSubtitleFileName, string subtitleFormat, int subtitleTrackId)
         {
-            CommandExecutor.ExecuteDownloadSubtitleCommand(inputVideoFileName, outputSubtitleFileName, subtitleFormat, subtitleTrackId);
+            new CommandExecutor().ExecuteDownloadSubtitleCommand(inputVideoFileName, outputSubtitleFileName, subtitleFormat, subtitleTrackId);
         }
     }
 }

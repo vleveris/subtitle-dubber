@@ -22,8 +22,8 @@
             <button class="btn btn-primary align-bottom" type="button" @onclick="SpeakText">Speak</button>
             <hr />
 
-            <label for="synthesizer">Select synthesizer:</label>
-            <select id="synthesizer" @bind="_selectedVoiceName" @bind:after="SetSynthesizer">
+            <label for="voice">Select voice:</label>
+            <select id="voice" @bind="_selectedVoiceName" @bind:after="SetVoice">
                 @if (_voices != null)
                 {
                     @foreach (var voice in _voices)
@@ -49,7 +49,7 @@ if (key != "Name" && key != "Gender" && key != "Age" && key != "Language")
                 }
             </ul>
 <hr/>
-            <input type="range" min="0" max="100" class="slider" @bind = "_speed" @bind:after="SetSpeed" step="5" title="Speed"/>
+            <input type="range" min="0" max="100" class="slider" @bind = "_rate" @bind:after="SetRate" step="5" title="Rate"/>
             <input type="range" min="0" max="100" class="slider" @bind="_volume" @bind:after="SetVolume" title="Volume"/>
 <hr/>
             <button class="btn btn-primary align-bottom" type="button" disabled="@(string.IsNullOrEmpty(State.InputVideoFileName) || State.InputVideoFileName == NoFileSelected)" @onclick="NavigateToAudioPage">Proceed</button>
@@ -59,7 +59,7 @@ if (key != "Name" && key != "Gender" && key != "Age" && key != "Language")
 @code {
     private List<VoiceInfo> _voices = new List<VoiceInfo>();
     private string _selectedVoiceName, _text = string.Empty;
-    private int _speed = 50, _volume=100;
+    private int _rate = 50, _volume=100;
     private VoiceInfo _selectedVoice;
     private SpeechService _speechService = new();
     private const string NoFileSelected = "No file selected", SelectFileButtonText = "Select file:";
@@ -68,8 +68,7 @@ if (key != "Name" && key != "Gender" && key != "Age" && key != "Language")
     {
         _voices = _speechService.GetInstalledVoices();
         _selectedVoiceName = _speechService.GetVoiceName();
-        SetSynthesizer();
-        _selectedVoice = _voices.Find(v => v.Name == _selectedVoiceName);
+        SetVoice();
         if (string.IsNullOrEmpty(State.InputVideoFileName))
         {
             State.InputVideoFileName = NoFileSelected;
@@ -81,9 +80,10 @@ if (key != "Name" && key != "Gender" && key != "Age" && key != "Language")
         State.AppState = StateType.SelectInputVideoFile;
     }
 
-    void SetSynthesizer()
+    private void SetVoice()
     {
         _speechService.SetVoice(_selectedVoiceName);
+        _selectedVoice = _voices.Find(v => v.Name == _selectedVoiceName);
     }
 
     private void SpeakText()
@@ -91,12 +91,12 @@ if (key != "Name" && key != "Gender" && key != "Age" && key != "Language")
         _speechService.Speak(_text);
     }
 
-    void SetSpeed()
+    private void SetRate()
     {
-        _speechService.SetRate(-10 + _speed / 5);
+        _speechService.SetRate(-10 + _rate / 5);
     }
 
-    void SetVolume()
+    private void SetVolume()
     {
         _speechService.SetVolume(_volume);
     }

@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace SubtitleDubber.Utils
 {
-    public static class FileUtils
+    public class FileUtils
     {
-        public static long GetAudioFileDuration(string fileName)
+        public long GetAudioFileDuration(string fileName)
         {
             var fileInfo = new FileInfo(fileName);
             long length = fileInfo.Length;
@@ -18,14 +18,13 @@ namespace SubtitleDubber.Utils
             return fileDuration;
         }
 
-        public static void RemoveFile(string fileName)
+        public void RemoveFile(string fileName)
         {
             var fileInfo = new FileInfo(fileName);
             fileInfo.Delete();
         }
 
-
-        public static void RemoveFiles(List<string> fileNames)
+                public void RemoveFiles(List<string> fileNames)
         {
             foreach (var fileName in fileNames)
             {
@@ -33,22 +32,22 @@ namespace SubtitleDubber.Utils
                             }
         }
 
-        public static void RenameFile(string oldName, string newName)
+        public void RenameFile(string oldName, string newName)
         {
             File.Move(oldName, newName);
         }
 
-        public static void CreateDirectory(string directoryName)
+        public void CreateDirectory(string directoryName)
         {
             Directory.CreateDirectory(directoryName);
         }
 
-        public static void RemoveDirectory(string directoryName)
+        public void RemoveDirectory(string directoryName)
         {
             Directory.Delete(directoryName);
         }
 
-        public static bool Exists(string fileName)
+        public bool Exists(string fileName)
         {
             return File.Exists(fileName);
         }

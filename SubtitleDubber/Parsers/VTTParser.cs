@@ -11,7 +11,6 @@ namespace SubtitleDubber.Parsers
     public class VTTParser : ISubtitleParser
     {
         private readonly string[] Delimiters = { "-->", "- >", "->" };
-        private const string NewLine = "\n";
         public string FileExtension { get; set; } = ".vtt";
 
         public List<SubtitleItem> Parse(string filePath)
