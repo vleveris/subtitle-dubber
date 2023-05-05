@@ -1,4 +1,4 @@
-﻿@page "/audio/{Name}/{Rate}/{Volume}"
+﻿@page "/audio/{Name}/{Rate:int}/{Volume:int}"
 
 @using SubtitleDubber.Services
 @using SubtitleDubber.Models
@@ -146,6 +146,7 @@
             _progressValue = percent;
             StateHasChanged();
         });
+
         try
         {
             if (string.IsNullOrEmpty(inputSubtitleFileName))

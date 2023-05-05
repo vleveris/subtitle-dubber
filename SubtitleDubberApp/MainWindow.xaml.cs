@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
@@ -57,6 +58,7 @@ namespace SubtitleDubberApp
         private void GetOutputVideoFileName()
         {
             var saveFileDialog = new SaveFileDialog();
+            saveFileDialog.FileName = Path.GetFileNameWithoutExtension(State.InputVideoFileName) + " (with audio subtitles)" + Path.GetExtension(State.InputVideoFileName);
             if (saveFileDialog.ShowDialog() == true)
             {
                 State.OutputVideoFileName = saveFileDialog.FileName;
@@ -66,6 +68,7 @@ namespace SubtitleDubberApp
         private void GetInputSubtitleFileName()
         {
             var openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "SubRip subtitle files (*.srt)|*.srt|VTT subtitle files (*.vtt)|*.vtt|SubStation Alpha subtitle files (*.ssa)|*.ssa";
             if (openFileDialog.ShowDialog() == true)
             {
                 State.InputSubtitleFileName = openFileDialog.FileName;
@@ -75,6 +78,8 @@ namespace SubtitleDubberApp
         private void GetOutputSubtitleFileName()
         {
             var saveFileDialog = new SaveFileDialog();
+            saveFileDialog.FileName = Path.GetFileNameWithoutExtension(State.InputVideoFileName) + " (subtitles).srt";
+
             if (saveFileDialog.ShowDialog() == true)
             {
                 State.OutputSubtitleFileName = saveFileDialog.FileName;
