@@ -86,7 +86,7 @@ public const int MaxRate = 10, MinRate = -10, DefaultRate = MinRate + MaxRate, M
 
         public void IncreaseRate()
         {
-if (_synthesizer.Rate < MaxRate)
+            if (_synthesizer.Rate < MaxRate)
             {
                 ++_synthesizer.Rate;
             }
@@ -112,7 +112,7 @@ if (_synthesizer.Rate < MaxRate)
 
         public void SetRate(int rate)
         {
-if (rate > MaxRate || rate < MinRate)
+            if (rate > MaxRate || rate < MinRate)
             {
                 throw new ArgumentOutOfRangeException("Rate must be between " + MinRate + " and " + MaxRate + ".");
             }
@@ -126,8 +126,8 @@ if (rate > MaxRate || rate < MinRate)
 
         public void SetVolume(int volume)
         {
-            if (volume > MaxRate || volume < MinVolume)
-            {
+            if (volume > MaxVolume || volume < MinVolume)
+            {       
                 throw new ArgumentOutOfRangeException("Volume must be between " + MinVolume + " and " + MaxVolume + ".");
             }
             _synthesizer.Volume = volume;

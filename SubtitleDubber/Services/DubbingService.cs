@@ -16,6 +16,10 @@ namespace SubtitleDubber.Services
 {
     public class DubbingService
     {
+        public string VoiceName { get; set; }
+        public int VoiceRate { get; set; }
+        public int VoiceVolume { get; set; }
+
         private SpeechService _speechService = new();
         private SubtitleService _subtitleService = new();
         private const string TemporarySubtitleFileName = "subtitle.srt", WaveFileExtension = ".wav", FileWithSilenceNameEnd = "_2", FinalFileNameStart = "final";
@@ -43,6 +47,9 @@ namespace SubtitleDubber.Services
                 //        _tempDirectory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
                 _tempDirectoryName = "C:\\hardas\\SubtitleDubber";
                 _fileUtils.CreateDirectory(_tempDirectoryName);
+            _speechService.SetVoice(VoiceName);
+            _speechService.SetRate(VoiceRate);
+            _speechService.SetVolume(VoiceVolume);
 
             FillParsers();
             if (!_fileUtils.Exists(inputSubtitleFileName))

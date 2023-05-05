@@ -1,4 +1,5 @@
-﻿@page "/audio"
+﻿@page "/audio/{Name}/{Rate}/{Volume}"
+
 @using SubtitleDubber.Services
 @using SubtitleDubber.Models
 @using SubtitleDubber.Parsers
@@ -10,9 +11,16 @@
         <div class="col-md-8 mx-auto">
                 <div class="card" style="margin: auto; max-width: 500px; min-height: 16rem;">
         <div class="card-body">
-                        <h2>Subtitle Options</h2>
-            <label for="subtitle">Select which subtitle stream to use for making audio track:</label>
-            <select id="subtitle" @bind="@_selectedSubtitleId" @bind:after="EnableGetSubtitleButton">
+            @if (!string.IsNullOrWhiteSpace(_error))
+            {
+                <div class="alert alert-danger">
+                    @_error
+                </div>
+            }
+            <h2>Subtitle Options</h2>
+            <div class="form-group">
+                <label for="subtitle">Select which subtitle stream to use for making audio track:</label>
+                <select id="subtitle" class="form-control" @bind="@_selectedSubtitleId" @bind:after="EnableGetSubtitleButton">
                 <option value="-1"></option>
 
                 @if (_subtitleList != null)
@@ -23,7 +31,9 @@
                     }
                 }
             </select>
-            <label for="subtitleFormat">Subtitle format:</label>
+</div>
+            <div class="form-group">
+                <label for="subtitleFormat">Subtitle format:</label>
             <select id="subtitleFormat" @bind="_selectedSubtitleFormat">
                 @if (_supportedSubtitleFormats != null)
                 {
@@ -36,27 +46,44 @@
             <button class="btn btn-primary align-bottom" type="button" disabled=@_isSubtitleButtonDisabled @onclick="SelectOutputSubtitleFile">Extract</button>
             <p>Or you can attach your own subtitle file.</p>
             <button class="btn btn-primary align-bottom" type="button" @onclick="SelectInputSubtitleFile">@SelectFileButtonText @State.InputSubtitleFileName</button>
-<h2>Audio track options</h2>
-            <input type="radio" name="useSox" @bind="@_useSox" checked="@_useSox" />
-<label>Use SOX library (more accurate, but slower). SOX binaries should be provided in PATH system variable.</label>
-            <input type="radio" name="useSox" checked="@(!_useSox)" @onchange="@(() => _useSox = false)" />
-            <label>Use native Windows speech library (less accurate, but faster).</label>
-
-            <label class="form-label" for="delay">Dubbing audio track delay (voice-over effect) in milliseconds:</label>
+</div>
+<hr>
+                    <h2>Audio track options</h2>
+            <div class="form-group">
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="useSox" checked="@_useSox" @onchange="@(() => _useSox = true)" />
+                    <label class="form-check-label">Use SOX library (more accurate, but slower). SOX binaries should be provided in PATH system variable.</label>
+</div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="useSox" checked="@(!_useSox)" @onchange="@(() => _useSox = false)" />
+                    <label class="form-check-label">Use native Windows speech library (less accurate, but faster).</label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="delay">Dubbing audio track delay (voice-over effect) in milliseconds:</label>
             <input type="number" id="delay" class="form-control" style="margin-bottom: 1rem;" @bind="_delay" />
-            <input type="range" min="0" max="100" class="slider" @bind="_originalTrackVolume" step="10" title="Original audio track volume" />
+            </div>
 
-            <p>Select path where to save modified video file.</p>
+            <div class="form-group">
+                <label for="originalTrackVolume">Original audio track volume</label>
+            <input id="originalTrackVolume" type="range" min="0" max="100" class="slider" @bind="_originalTrackVolume" step="10" />
+            </div>
+            <hr>
+
+            <h2>Save Options</h2>
+            <div class="form-group">
+            <label>Select path where to save modified video file.</label>
             <button class="btn btn align-bottom" type="button" @onclick="SelectOutputVideoFile">@SelectFileButtonText @State.OutputVideoFileName</button>
-<button class="btn btn-primary align-bottom" type="button" @onclick="DubAsync" disabled="@((string.IsNullOrEmpty(State.OutputVideoFileName) || State.OutputVideoFileName == NoFileSelected) || (_isSubtitleButtonDisabled && string.IsNullOrEmpty(State.InputSubtitleFileName)) || _isDubbingInProgress)">Dub</button>
+            </div>
+            <button class="btn btn-primary align-bottom" type="button" @onclick="DubAsync" disabled="@((string.IsNullOrEmpty(State.OutputVideoFileName) || State.OutputVideoFileName == NoFileSelected) || (_isSubtitleButtonDisabled && string.IsNullOrEmpty(State.InputSubtitleFileName)) || _isDubbingInProgress)">Dub</button>
             @if (_isDubbingInProgress)
             {
                             <div class="progress mt-2" style="height: 2em;">
                     <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width: @(_progressValue)%; background-color: #204066;" aria-valuenow="@_progressValue" aria-valuemin="0" aria-valuemax="100">
                     </div>
-                    <div>
-                        <span id="progressLabel" class="text-muted">Generating audio track...</span>
-                    </div>
+                </div>
+                <div>
+                    <span id="progressLabel" class="text-muted">Generating audio track...</span>
                 </div>
             }
                                 </div>
@@ -66,21 +93,27 @@
 
 @code {
 
+    [Parameter]
+    public string Name { get; set; }
+    [Parameter]
+    public int Rate { get; set; }
+    [Parameter]
+    public int Volume { get; set; }
+
+    private const string NoFileSelected = "No file selected", SelectFileButtonText = "Select file:", ErrorMessage = "Unexpected error has occured. Try restarting the application.";
+    private const int DefaultDelay = 500, DefaultOriginalTrackVolume = 100;
     private DubbingService _dubbingService = new();
     private SubtitleService _subtitleService = new();
     private List<SubtitleStreamDescription> _subtitleList = new();
-    private int _selectedSubtitleId = -1, _progressValue = 0;
+    private int _selectedSubtitleId = -1, _progressValue = 0, _delay = DefaultDelay, _originalTrackVolume = DefaultOriginalTrackVolume;
     private bool _isSubtitleButtonDisabled = true, _isDubbingInProgress = false, _useSox = true;
-    private const string NoFileSelected = "No file selected";
-    private const string SelectFileButtonText = "Select file:";
     private List<FileFormat> _supportedSubtitleFormats = new List<FileFormat>();
     private readonly FileFormat DefaultSubtitleFormat = new(FileFormat.DefaultSubtitleFileExtension, "SubRip");
     private string _selectedSubtitleFormat;
-private int _delay = 500, _originalTrackVolume = 100;
+    private string? _error;
 
     protected override void OnInitialized()
     {
-        _subtitleList = _subtitleService.GetSubtitleList(State.InputVideoFileName);
         State.AppStateChanged += State_AppStateChanged;
         State.InputSubtitleFileName = NoFileSelected;
         State.OutputSubtitleFileName = NoFileSelected;
@@ -89,6 +122,19 @@ private int _delay = 500, _originalTrackVolume = 100;
             State.OutputVideoFileName = NoFileSelected;
         }
         FillSupportedFormats();
+
+        _dubbingService.VoiceName = Name;
+        _dubbingService.VoiceRate = Rate;
+        _dubbingService.VoiceVolume = Volume;
+
+        try
+        {
+            _subtitleList = _subtitleService.GetSubtitleList(State.InputVideoFileName);
+        }
+        catch (Exception ex)
+        {
+            _error = ErrorMessage;
+        }
     }
 
     private async Task DubAsync()
@@ -100,15 +146,25 @@ private int _delay = 500, _originalTrackVolume = 100;
             _progressValue = percent;
             StateHasChanged();
         });
-        if (string.IsNullOrEmpty(inputSubtitleFileName))
+        try
         {
-            await Task.Run(() => _dubbingService.Dub(_selectedSubtitleId, State.InputVideoFileName, State.OutputVideoFileName, _useSox, _delay, _originalTrackVolume, progress));
-                    }
-        else
-        {
-            await Task.Run(() => _dubbingService.Dub(inputSubtitleFileName, State.InputVideoFileName, State.OutputVideoFileName, _useSox, _delay, _originalTrackVolume, progress));
+            if (string.IsNullOrEmpty(inputSubtitleFileName))
+            {
+                await Task.Run(() => _dubbingService.Dub(_selectedSubtitleId, State.InputVideoFileName, State.OutputVideoFileName, _useSox, _delay, _originalTrackVolume, progress));
+            }
+            else
+            {
+                await Task.Run(() => _dubbingService.Dub(inputSubtitleFileName, State.InputVideoFileName, State.OutputVideoFileName, _useSox, _delay, _originalTrackVolume, progress));
+            }
         }
-        _isDubbingInProgress = false;
+        catch (Exception ex)
+        {
+            _error = ErrorMessage;
+        }
+        finally
+        {
+            _isDubbingInProgress = false;
+        }
     }
 
     private void SelectInputSubtitleFile()
@@ -134,7 +190,14 @@ private int _delay = 500, _originalTrackVolume = 100;
             case StateType.SelectedOutputSubtitleFile:
                 if (!string.IsNullOrEmpty(State.OutputSubtitleFileName))
                 {
-                    _subtitleService.DownloadSubtitle(State.InputVideoFileName, State.OutputSubtitleFileName, _selectedSubtitleFormat, _selectedSubtitleId);
+                    try
+                    {
+                        _subtitleService.DownloadSubtitle(State.InputVideoFileName, State.OutputSubtitleFileName, _selectedSubtitleFormat, _selectedSubtitleId);
+                    }
+                    catch (Exception ex)
+                    {
+                        _error = ErrorMessage;
+                    }
                 }
                 break;
             default:
