@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using SubtitleDubber.Models;
 using SubtitleDubber.Parsers;
+using SubtitleDubber.Exceptions;
 
 namespace SubtitleDubber.Parsers
 {
@@ -26,8 +27,7 @@ namespace SubtitleDubber.Parsers
             var ssaStream = new StreamReader(filePath, Encoding.UTF8).BaseStream;
             if (!ssaStream.CanRead || !ssaStream.CanSeek)
             {
-                // exception
-
+                throw new IOException("Error reading file.");
             }
 
             ssaStream.Position = 0;
@@ -91,20 +91,16 @@ namespace SubtitleDubber.Parsers
                             return items;
                         }
 
-                        // exception
-                        return null;
+                        throw new SubtitleException();
                     }
 
-                    // exception
-                    return null;
+                    throw new SubtitleException();
                 }
 
-                // exception
-                return null;
+                throw new SubtitleException();
             }
 
-            // exception
-            return null;
+            throw new SubtitleException();
         }
 
         private SubtitleTimeSpan ParseSsaTimeSpan(string stringValue)

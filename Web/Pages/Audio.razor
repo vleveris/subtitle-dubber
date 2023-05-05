@@ -83,7 +83,7 @@
                     </div>
                 </div>
                 <div>
-                    <span id="progressLabel" class="text-muted">Generating audio track...</span>
+                    <span id="progressLabel" class="text-muted">@_progressText</span>
                 </div>
             }
                                 </div>
@@ -109,7 +109,7 @@
     private bool _isSubtitleButtonDisabled = true, _isDubbingInProgress = false, _useSox = true;
     private List<FileFormat> _supportedSubtitleFormats = new List<FileFormat>();
     private readonly FileFormat DefaultSubtitleFormat = new(FileFormat.DefaultSubtitleFileExtension, "SubRip");
-    private string _selectedSubtitleFormat;
+    private string _selectedSubtitleFormat, _progressText;
     private string? _error;
 
     protected override void OnInitialized()
@@ -119,7 +119,7 @@
         State.OutputSubtitleFileName = NoFileSelected;
         if (string.IsNullOrEmpty(State.OutputVideoFileName))
         {
-            State.OutputVideoFileName = NoFileSelected;
+            State.OutputVideoFileName = Path.Combine(Path.GetDirectoryName(State.InputVideoFileName), Path.GetFileNameWithoutExtension(State.InputVideoFileName)) + " (with audio subtitles)" + Path.GetExtension(State.InputVideoFileName);
         }
         FillSupportedFormats();
 
@@ -141,10 +141,32 @@
     {
         _isDubbingInProgress = true;
         var inputSubtitleFileName = State.InputSubtitleFileName != NoFileSelected ? State.InputSubtitleFileName : string.Empty;
-        var progress = new Progress<int>(percent =>
+        var progress = new Progress<string>(progressValue =>
         {
-            _progressValue = percent;
-            StateHasChanged();
+            var values = progressValue.Split(Environment.NewLine);
+            if (values.Length == 2)
+            {
+                var stateChanged = false;
+                int percent;
+                var parseResult = int.TryParse(values[1], out percent);
+                if (parseResult)
+                {
+                    if (_progressValue != percent)
+                    {
+                        _progressValue = percent;
+                        stateChanged= true;
+                    }
+                }
+                if (_progressText != values[0])
+                {
+                    _progressText = values[0];
+                    stateChanged = true;
+                }
+                if (stateChanged)
+                {
+                    StateHasChanged();
+                }
+            }
         });
 
         try

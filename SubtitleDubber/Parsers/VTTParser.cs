@@ -5,6 +5,7 @@ using System.Text;
 using System.IO;
 using SubtitleDubber.Models;
 using System.Text.RegularExpressions;
+using SubtitleDubber.Exceptions;
 
 namespace SubtitleDubber.Parsers
 {
@@ -23,8 +24,7 @@ namespace SubtitleDubber.Parsers
             var vttStream = new StreamReader(filePath, Encoding.UTF8).BaseStream;
             if (!vttStream.CanRead || !vttStream.CanSeek)
             {
-// exception
-
+                throw new IOException("Error reading file.");
             }
 
             vttStream.Position = 0;
@@ -74,8 +74,7 @@ namespace SubtitleDubber.Parsers
 
                 return items;
             }
-// exception
-return null;
+            throw new SubtitleException();
         }
 
         private IEnumerable<string> GetVttSubTitleParts(TextReader reader)

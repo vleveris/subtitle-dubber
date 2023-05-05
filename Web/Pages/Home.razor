@@ -151,6 +151,6 @@ try
     private void NavigateToAudioPage()
     {
         Navigation.NavigateTo(AudioPage.Replace(AudioPageVoiceNameParameter, _selectedVoiceName)
-            .Replace(AudioPageVoiceRateParameter, _rate.ToString()).Replace(AudioPageVoiceVolumeParameter, _volume.ToString()));
+            .Replace(AudioPageVoiceRateParameter, (-10 + _rate / 5).ToString()).Replace(AudioPageVoiceVolumeParameter, _volume.ToString()));
     }
 }

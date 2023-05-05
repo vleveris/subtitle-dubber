@@ -58,7 +58,7 @@ namespace SubtitleDubberApp
         private void GetOutputVideoFileName()
         {
             var saveFileDialog = new SaveFileDialog();
-            saveFileDialog.FileName = Path.GetFileNameWithoutExtension(State.InputVideoFileName) + " (with audio subtitles)" + Path.GetExtension(State.InputVideoFileName);
+            saveFileDialog.FileName = Path.Combine(Path.GetDirectoryName(State.InputVideoFileName), Path.GetFileNameWithoutExtension(State.InputVideoFileName)) + " (with audio subtitles)" + Path.GetExtension(State.InputVideoFileName);
             if (saveFileDialog.ShowDialog() == true)
             {
                 State.OutputVideoFileName = saveFileDialog.FileName;
@@ -78,7 +78,7 @@ namespace SubtitleDubberApp
         private void GetOutputSubtitleFileName()
         {
             var saveFileDialog = new SaveFileDialog();
-            saveFileDialog.FileName = Path.GetFileNameWithoutExtension(State.InputVideoFileName) + " (subtitles).srt";
+            saveFileDialog.FileName = Path.Combine(Path.GetDirectoryName(State.InputVideoFileName), Path.GetFileNameWithoutExtension(State.InputVideoFileName)) + " (subtitles).srt";
 
             if (saveFileDialog.ShowDialog() == true)
             {

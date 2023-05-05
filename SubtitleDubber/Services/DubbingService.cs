@@ -31,18 +31,18 @@ namespace SubtitleDubber.Services
         private long[] _silences;
         private FileUtils _fileUtils = new();
 
-        public void Dub(int subtitleTrackId, string inputVideoFileName, string outputVideoFileName, bool useSox, int delay, int originalTrackVolume, IProgress<int> progress)
+        public void Dub(int subtitleTrackId, string inputVideoFileName, string outputVideoFileName, bool useSox, int delay, int originalTrackVolume, IProgress<string> progress)
         {
             //        _tempDirectoryName = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             _tempDirectoryName = "C:\\hardas\\SubtitleDubber";
             _fileUtils.CreateDirectory(_tempDirectoryName);
-            var inputSubtitleFileName = _tempDirectoryName + Path.DirectorySeparatorChar + TemporarySubtitleFileName;
+            var inputSubtitleFileName = Path.Combine(_tempDirectoryName, TemporarySubtitleFileName);
             _subtitleService.DownloadSubtitle(inputVideoFileName, inputSubtitleFileName, FileFormat.DefaultSubtitleFileExtension, subtitleTrackId);
             _tempFiles.Add(inputSubtitleFileName);
             Dub(inputSubtitleFileName, inputVideoFileName, outputVideoFileName, useSox, delay, originalTrackVolume, progress);
         }
 
-        public void Dub(string inputSubtitleFileName, string inputVideoFileName, string outputVideoFileName, bool useSox, int delay, int originalTrackVolume, IProgress<int> progress)
+        public void Dub(string inputSubtitleFileName, string inputVideoFileName, string outputVideoFileName, bool useSox, int delay, int originalTrackVolume, IProgress<string> progress)
         {
                 //        _tempDirectory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
                 _tempDirectoryName = "C:\\hardas\\SubtitleDubber";
@@ -74,13 +74,13 @@ namespace SubtitleDubber.Services
                 GenerateAudioTrackFromBuilder(progress);
             }
                 var executor = new CommandExecutor();
-                var inputAudioFileName = _tempDirectoryName + Path.DirectorySeparatorChar + FinalFileNameStart + WaveFileExtension;
+                var inputAudioFileName = Path.Combine(_tempDirectoryName, FinalFileNameStart + WaveFileExtension);
                 executor.ExecuteMergeAudioCommand(inputVideoFileName, inputAudioFileName, outputVideoFileName, delay, originalTrackVolume);
             }
             _fileUtils.RemoveFiles(_tempFiles);
         }
 
-        private void DubSubtitles(List<SubtitleItem> subtitles, IProgress<int> progress)
+        private void DubSubtitles(List<SubtitleItem> subtitles, IProgress<string> progress)
         {
             _silences = new long[subtitles.Count + 1];
             foreach (var subtitle in subtitles)
@@ -91,10 +91,7 @@ namespace SubtitleDubber.Services
                     nextSubtitle = subtitles[subtitle.Index];
                 }
                 DubSubtitle(subtitle, nextSubtitle);
-                if (progress != null)
-                {
-                    progress.Report(75 * subtitle.Index / subtitles.Count);
-                }
+                    ReportProgress(progress, 100 * subtitle.Index / subtitles.Count, "Generating audio subtitle files...");
             }
         }
 
@@ -166,7 +163,7 @@ private void DubSubtitle(SubtitleItem currentSubtitle, SubtitleItem nextSubtitle
             long subtitleSpeechDuration;
             var subtitleText = currentSubtitle.Text.RemoveAllFormatting();
             var subtitleIndex = currentSubtitle.Index;
-            var fileName = _tempDirectoryName + Path.DirectorySeparatorChar + subtitleIndex;
+            var fileName = Path.Combine(_tempDirectoryName, subtitleIndex.ToString());
             var isFirstSubtitle = subtitleIndex == 1;
             var isLastSubtitle = nextSubtitle == null;
 
@@ -202,11 +199,11 @@ private void DubSubtitle(SubtitleItem currentSubtitle, SubtitleItem nextSubtitle
                 _silences[subtitleIndex] = silenceDuration;
         }
 
-        private void InsertSilences(IProgress<int> progress)
+        private void InsertSilences(IProgress<string> progress)
         {
             for (var i = 1; i < _silences.Length; ++i)
             {
-                var inputFileName = _tempDirectoryName + Path.DirectorySeparatorChar + i;
+                var inputFileName = Path.Combine(_tempDirectoryName, i.ToString());
                 var outputFileName = inputFileName + FileWithSilenceNameEnd + WaveFileExtension;
                 var executor = new CommandExecutor();
                 if (i == 1)
@@ -218,15 +215,13 @@ private void DubSubtitle(SubtitleItem currentSubtitle, SubtitleItem nextSubtitle
                     executor.ExecuteSilenceCommand(inputFileName, outputFileName, 0, _silences[i]);
                 }
                 _tempFiles.Add(outputFileName);
-                if (progress != null)
-                {
-                    progress.Report(20 * i/ _silences.Length-1+ 75);
-                }
+                    ReportProgress(progress, 100 * i/ (_silences.Length-1), "Adding silences...");
             }
         }
 
-        private void ConcatFiles(int numberOfFiles, IProgress<int> progress)
+        private void ConcatFiles(int numberOfFiles, IProgress<string> progress)
         {
+            var progressString = "Generating subtitle audio track...";
             var forCounter = numberOfFiles / MaxFilesForOneCommand;
             int fileNumber = 0;
             if (numberOfFiles % MaxFilesForOneCommand > 0)
@@ -237,6 +232,7 @@ private void DubSubtitle(SubtitleItem currentSubtitle, SubtitleItem nextSubtitle
             var inputFileName = string.Empty;
             var parameters = new List<string>();
             var executor = new CommandExecutor();
+                ReportProgress(progress, 0, progressString);
             for (var i = 0; i < forCounter; ++i)
             {
                 parameters.Clear();
@@ -249,8 +245,9 @@ private void DubSubtitle(SubtitleItem currentSubtitle, SubtitleItem nextSubtitle
                 outputFileName = FinalFileNameStart + i + WaveFileExtension;
                 parameters.Add(outputFileName);
                 executor.ExecuteConcatFilesCommand(parameters, _tempDirectoryName);
-                _tempFiles.Add(_tempDirectoryName + Path.DirectorySeparatorChar + outputFileName);
-            }
+                _tempFiles.Add(Path.Combine(_tempDirectoryName, outputFileName));
+                    ReportProgress(progress, 80*fileNumber/numberOfFiles, progressString);
+                            }
             parameters.Clear();
             for (var i = 0; i < forCounter; ++i)
             {
@@ -260,14 +257,13 @@ private void DubSubtitle(SubtitleItem currentSubtitle, SubtitleItem nextSubtitle
             outputFileName = FinalFileNameStart + WaveFileExtension;
             parameters.Add(outputFileName);
             executor.ExecuteConcatFilesCommand(parameters, _tempDirectoryName);
-            if (progress != null)
-            {
-                progress.Report(100);
-            }
+                ReportProgress(progress, 100, progressString);
         }
 
-        private void GenerateAudioTrackFromBuilder(IProgress<int> progress)
+        private void GenerateAudioTrackFromBuilder(IProgress<string> progress)
         {
+            var progressString = "Generating subtitle audio track...";
+                ReportProgress(progress, 0, progressString);
             var builder = new PromptBuilder();
 if (_silences.Length > 0)
             {
@@ -275,14 +271,11 @@ if (_silences.Length > 0)
             }
 for (var i=1; i<_silences.Length; ++i)
             {
-                builder.AppendAudio(_tempDirectoryName + Path.DirectorySeparatorChar + i);
+                builder.AppendAudio(Path.Combine(_tempDirectoryName, i.ToString()));
                 AppendSilence(_silences[i], builder);
             }
-            _speechService.Speak(builder, _tempDirectoryName + Path.DirectorySeparatorChar + FinalFileNameStart + WaveFileExtension);
-            if (progress != null)
-            {
-                progress.Report(100);
-            }
+            _speechService.Speak(builder, Path.Combine(_tempDirectoryName, FinalFileNameStart + WaveFileExtension));
+                ReportProgress(progress, 100, progressString);
         }
 
         private void AppendSilence(long ms, PromptBuilder builder)
@@ -295,5 +288,13 @@ for (var i=1; i<_silences.Length; ++i)
             builder.AppendBreak(new TimeSpan(ms* 10000));
         }
 
-}
+        private void ReportProgress(IProgress<string> progress, int percentage, string text)
+        {
+            if (progress != null)
+            {
+                progress.Report(text + Environment.NewLine + percentage);
+            }
+        }
+
+    }
 }

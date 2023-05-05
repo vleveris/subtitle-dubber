@@ -1,5 +1,6 @@
 ﻿using System;
 using SubtitleDubber.Helpers;
+using SubtitleDubber.Exceptions;
 
 namespace SubtitleDubber.Models
 {
@@ -63,10 +64,9 @@ public SubtitleItem()
             }
             catch (Exception ex)
             {
-//                throw new SubRipException("Invalid SubRip item string representation.", ex);
+                throw new SubtitleException("Invalid subtitle item representation.", ex);
             }
         }
-
 
                 public override string ToString()
                 {
