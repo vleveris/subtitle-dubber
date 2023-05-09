@@ -65,11 +65,11 @@ if (!string.IsNullOrEmpty(command.WorkingDirectory))
                     var subtitleParts = subtitle.Split(CSVDelimiter);
                     if (subtitleParts.Length > 1)
                     {
-                        long parseValue;
-                        var parseResult = long.TryParse(subtitleParts[0], out parseValue);
-if (parseResult)
+                        long id;
+                        var parsedResult = long.TryParse(subtitleParts[0], out id);
+if (parsedResult)
                         {
-                            description.Id = parseValue;
+                            description.Id = id;
                             description.LanguageCode = subtitleParts[1];
                     }
                     if (subtitleParts.Length == 3)

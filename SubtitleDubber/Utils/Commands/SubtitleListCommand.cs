@@ -14,7 +14,7 @@ namespace SubtitleDubber.Utils.Commands
                 throw new ArgumentNullException("InputFileName");
             }
             Arguments.Add(RawCommand);
-            Arguments.Add(InputFileName);
+            Arguments.Add(EncloseFileNameWithQuotes(InputFileName));
         }
 
     }

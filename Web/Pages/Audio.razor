@@ -2,7 +2,6 @@
 
 @using SubtitleDubber.Services
 @using SubtitleDubber.Models
-@using SubtitleDubber.Parsers
 @using Web.Data
 @using System.IO
 
@@ -75,7 +74,7 @@
             <label>Select path where to save modified video file.</label>
             <button class="btn btn align-bottom" type="button" @onclick="SelectOutputVideoFile">@SelectFileButtonText @State.OutputVideoFileName</button>
             </div>
-            <button class="btn btn-primary align-bottom" type="button" @onclick="DubAsync" disabled="@((string.IsNullOrEmpty(State.OutputVideoFileName) || State.OutputVideoFileName == NoFileSelected) || (_isSubtitleButtonDisabled && string.IsNullOrEmpty(State.InputSubtitleFileName)) || _isDubbingInProgress)">Dub</button>
+            <button class="btn btn-primary align-bottom" type="button" @onclick="DubAsync" disabled="@((string.IsNullOrEmpty(State.OutputVideoFileName) || State.OutputVideoFileName == NoFileSelected) || (_isSubtitleButtonDisabled && State.InputSubtitleFileName == NoFileSelected) || _isDubbingInProgress)">Dub</button>
             @if (_isDubbingInProgress)
             {
                             <div class="progress mt-2" style="height: 2em;">
@@ -148,8 +147,8 @@
             {
                 var stateChanged = false;
                 int percent;
-                var parseResult = int.TryParse(values[1], out percent);
-                if (parseResult)
+                var parsedResult = int.TryParse(values[1], out percent);
+                if (parsedResult)
                 {
                     if (_progressValue != percent)
                     {

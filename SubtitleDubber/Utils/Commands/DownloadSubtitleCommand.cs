@@ -45,11 +45,11 @@ namespace SubtitleDubber.Utils.Commands
             }
 
             Arguments.Add(InputOption);
-            Arguments.Add(InputFileName);
+            Arguments.Add(EncloseFileNameWithQuotes(InputFileName));
             Arguments.Add(MapExpression + SubtitleTrackId.ToString());
             Arguments.Add(SubtitleStreamOption);
             Arguments.Add(SubtitleFormat);
-            Arguments.Add(OutputFileName);
+            Arguments.Add(EncloseFileNameWithQuotes(OutputFileName));
             Arguments.Add(OverrideOption);
         }
 

@@ -48,14 +48,14 @@ if (OriginalAudioVolume < MinOriginalAudioVolume || OriginalAudioVolume > MaxOri
             }
 
             Arguments.Add(InputOption);
-            Arguments.Add(InputVideoFileName);
+            Arguments.Add(EncloseFileNameWithQuotes(InputVideoFileName));
             Arguments.Add(InputOption);
-            Arguments.Add(InputAudioFileName);
+            Arguments.Add(EncloseFileNameWithQuotes(InputAudioFileName));
             Arguments.Add(CopyVideoCodecOption);
                         Arguments.Add(ComplexFiltergraph.Replace("<delay>", DubbingAudioDelay.ToString()).Replace("<volume>", ConvertToVolumeString(OriginalAudioVolume)));
             Arguments.Add(IncludeStreamsOption);
             Arguments.Add(OverrideOption);
-            Arguments.Add(OutputVideoFileName);
+            Arguments.Add(EncloseFileNameWithQuotes(OutputVideoFileName));
         }
 
         private string ConvertToVolumeString(int volume)

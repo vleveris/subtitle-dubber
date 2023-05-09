@@ -49,5 +49,10 @@ namespace SubtitleDubber.Utils.Commands
             }
             return null;
         }
+
+protected string EncloseFileNameWithQuotes(string fileName)
+        {
+            return "\"" + fileName + "\"";
+        }
     }
 }

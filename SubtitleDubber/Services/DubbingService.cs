@@ -7,7 +7,6 @@ using SubtitleDubber.Models;
 using SubtitleDubber.Helpers;
 using SubtitleDubber.Utils;
 using System.Speech.Synthesis;
-using SubtitleDubber.Parsers;
 using System.Collections;
 using System.Diagnostics;
 using SubtitleDubber.Validators;
@@ -24,17 +23,14 @@ namespace SubtitleDubber.Services
         private SubtitleService _subtitleService = new();
         private const string TemporarySubtitleFileName = "subtitle.srt", WaveFileExtension = ".wav", FileWithSilenceNameEnd = "_2", FinalFileNameStart = "final";
         private const int MaxFilesForOneCommand = 500;
-        private List<string> _tempFiles = new List<string>();
-        private readonly List<ISubtitleParser> _supportedParsers =
-            new List<ISubtitleParser>();
         private string _tempDirectoryName;
         private long[] _silences;
         private FileUtils _fileUtils = new();
+        private List<string> _tempFiles = new List<string>();
 
         public void Dub(int subtitleTrackId, string inputVideoFileName, string outputVideoFileName, bool useSox, int delay, int originalTrackVolume, IProgress<string> progress)
         {
-            //        _tempDirectoryName = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-            _tempDirectoryName = "C:\\hardas\\SubtitleDubber";
+                    _tempDirectoryName = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             _fileUtils.CreateDirectory(_tempDirectoryName);
             var inputSubtitleFileName = Path.Combine(_tempDirectoryName, TemporarySubtitleFileName);
             _subtitleService.DownloadSubtitle(inputVideoFileName, inputSubtitleFileName, FileFormat.DefaultSubtitleFileExtension, subtitleTrackId);
@@ -44,25 +40,20 @@ namespace SubtitleDubber.Services
 
         public void Dub(string inputSubtitleFileName, string inputVideoFileName, string outputVideoFileName, bool useSox, int delay, int originalTrackVolume, IProgress<string> progress)
         {
-                //        _tempDirectory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-                _tempDirectoryName = "C:\\hardas\\SubtitleDubber";
+            if (string.IsNullOrEmpty(_tempDirectoryName))
+            {
+                _tempDirectoryName = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
                 _fileUtils.CreateDirectory(_tempDirectoryName);
+            }
             _speechService.SetVoice(VoiceName);
             _speechService.SetRate(VoiceRate);
             _speechService.SetVolume(VoiceVolume);
 
-            FillParsers();
             if (!_fileUtils.Exists(inputSubtitleFileName))
             {
-
+                throw new ArgumentException("Subtitle file name doesn't exist.");
             }
-            var selectedParser = _supportedParsers.Where(parser => parser.FileExtension == Path.GetExtension(inputSubtitleFileName))
-                .Select(parser => parser).FirstOrDefault();
-
-            var subtitles = selectedParser.Parse(inputSubtitleFileName);
-            var validator = new SubtitlesValidator();
-            if (validator.Validate(subtitles))
-            {
+            var subtitles = _subtitleService.GetSubtitlesFromFile(inputSubtitleFileName);
             DubSubtitles(subtitles, progress);
                             if (useSox)
             {
@@ -76,8 +67,8 @@ namespace SubtitleDubber.Services
                 var executor = new CommandExecutor();
                 var inputAudioFileName = Path.Combine(_tempDirectoryName, FinalFileNameStart + WaveFileExtension);
                 executor.ExecuteMergeAudioCommand(inputVideoFileName, inputAudioFileName, outputVideoFileName, delay, originalTrackVolume);
-            }
-            _fileUtils.RemoveFiles(_tempFiles);
+                        _fileUtils.RemoveFiles(_tempFiles);
+            _fileUtils.RemoveDirectory(_tempDirectoryName);
         }
 
         private void DubSubtitles(List<SubtitleItem> subtitles, IProgress<string> progress)
@@ -151,12 +142,6 @@ namespace SubtitleDubber.Services
             return overlap;
         }
 
-        private void FillParsers()
-        {
-            _supportedParsers.Add(new SSAParser());
-            _supportedParsers.Add(new VTTParser());
-            _supportedParsers.Add(new SrtParser());
-        }
 
 private void DubSubtitle(SubtitleItem currentSubtitle, SubtitleItem nextSubtitle)
         {
@@ -257,7 +242,8 @@ private void DubSubtitle(SubtitleItem currentSubtitle, SubtitleItem nextSubtitle
             outputFileName = FinalFileNameStart + WaveFileExtension;
             parameters.Add(outputFileName);
             executor.ExecuteConcatFilesCommand(parameters, _tempDirectoryName);
-                ReportProgress(progress, 100, progressString);
+            _tempFiles.Add(Path.Combine(_tempDirectoryName, outputFileName));
+            ReportProgress(progress, 100, progressString);
         }
 
         private void GenerateAudioTrackFromBuilder(IProgress<string> progress)
