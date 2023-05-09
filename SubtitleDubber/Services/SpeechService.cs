@@ -21,7 +21,7 @@ public const int MaxRate = 10, MinRate = -10, DefaultRate = MinRate + MaxRate, M
                 infoModel.Name = info.Name;
                 infoModel.Description = info.Description;
                 infoModel.Age = info.Age.ToString();
-                infoModel.Language = info.Culture.ToString();
+                infoModel.Language = info.Culture.DisplayName;
                 infoModel.Id = info.Id;
                 infoModel.Gender = info.Gender.ToString();
 
