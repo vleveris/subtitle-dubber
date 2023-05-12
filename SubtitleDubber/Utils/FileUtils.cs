@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,7 +14,7 @@ namespace SubtitleDubber.Utils
             var fileInfo = new FileInfo(fileName);
             long length = fileInfo.Length;
             double fileLength = length;
-            var audioDuration = (fileLength-46) / 44100 * 1000;                 // time = FileLength / (Sample Rate * Channels * Bits per sample /8)
+            var audioDuration = (fileLength-46) / 64000 * 1000;                 // time = FileLength / (Sample Rate * Channels * Bits per sample /8)
                         var fileDuration = (long)audioDuration;
             return fileDuration;
         }

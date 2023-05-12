@@ -7,7 +7,7 @@ namespace SubtitleDubber.Services
     public class SpeechService
     {
         private SpeechSynthesizer _synthesizer = new();
-        private SpeechAudioFormatInfo _synthFormat = new(44100, AudioBitsPerSample.Eight, AudioChannel.Mono);
+        private SpeechAudioFormatInfo _synthFormat = new(32000, AudioBitsPerSample.Sixteen, AudioChannel.Mono);
 public const int MaxRate = 10, MinRate = -10, DefaultRate = MinRate + MaxRate, MinVolume = 0, MaxVolume = 100;
 
         public List<Models.VoiceInfo> GetInstalledVoices()

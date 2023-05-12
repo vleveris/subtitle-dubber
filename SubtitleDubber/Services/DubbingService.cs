@@ -30,7 +30,8 @@ namespace SubtitleDubber.Services
 
         public void Dub(int subtitleTrackId, string inputVideoFileName, string outputVideoFileName, bool useSox, int delay, int originalTrackVolume, IProgress<string> progress)
         {
-                    _tempDirectoryName = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            _tempDirectoryName = "C:\\hardas\\subtitleDubber";
+//            _tempDirectoryName = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             _fileUtils.CreateDirectory(_tempDirectoryName);
             var inputSubtitleFileName = Path.Combine(_tempDirectoryName, TemporarySubtitleFileName);
             _subtitleService.DownloadSubtitle(inputVideoFileName, inputSubtitleFileName, FileFormat.DefaultSubtitleFileExtension, subtitleTrackId);
@@ -69,6 +70,8 @@ namespace SubtitleDubber.Services
                 executor.ExecuteMergeAudioCommand(inputVideoFileName, inputAudioFileName, outputVideoFileName, delay, originalTrackVolume);
                         _fileUtils.RemoveFiles(_tempFiles);
             _fileUtils.RemoveDirectory(_tempDirectoryName);
+            _tempFiles.Clear();
+            _tempDirectoryName = null;
         }
 
         private void DubSubtitles(List<SubtitleItem> subtitles, IProgress<string> progress)
