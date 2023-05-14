@@ -50,10 +50,34 @@ namespace SubtitleDubber.Helpers
                 return source;
             }
 
-            return source.Replace("{\\an8}", string.Empty);
+            return source.Replace("{\\an8}", string.Empty)
+                .Replace("&nbsp;", string.Empty);
         }
 
-        public static string RemoveFont(this string source)
+        public static string RemoveUnknownTags(this string source)
+        {
+            if (string.IsNullOrEmpty(source))
+            {
+                return source;
+            }
+
+            try
+            {
+                while (source.IndexOf("<", StringComparison.Ordinal) != -1)
+                {
+                    var i = source.IndexOf("<", StringComparison.Ordinal);
+                    var j = source.IndexOf(">", StringComparison.Ordinal);
+                    source = source.Remove(i, j - i + 1);
+                }
+                return source;
+            }
+            catch
+            {
+                return source;
+            }
+        }
+
+            public static string RemoveFont(this string source)
         {
             if (string.IsNullOrEmpty(source))
             {
@@ -72,7 +96,7 @@ namespace SubtitleDubber.Helpers
                 return false;
             }
 
-            return source.Contains("\r") || source.Contains("\n");
+            return source.Contains("\r") || source.Contains("\n") || source.Contains("<br>") || source.Contains("<BR>");
         }
 
         public static bool EndsWithSentenceEndChar(this string source)
@@ -94,7 +118,9 @@ if (string.IsNullOrEmpty(source))
             }
 
             return source.Replace("\r", " ")
-                .Replace("\n", " ");
+                .Replace("\n", " ")
+                .Replace("<br>", " ")
+                .Replace("<BR>", " ");
         }
 
         public static string ReplaceCommasToQuestionMarks(this string source)
@@ -151,7 +177,7 @@ char s = (char)i;
 
         public static string RemoveAllFormatting(this string source)
         {
-            return source.RemoveBold().RemoveItalic().RemoveUnderline().RemoveFont().RemoveReturnChars().RemoveSpecialTags();
+            return source.RemoveBold().RemoveItalic().RemoveUnderline().RemoveFont().RemoveReturnChars().RemoveSpecialTags().RemoveUnknownTags();
         }
 
     }
