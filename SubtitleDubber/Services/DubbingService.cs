@@ -10,6 +10,7 @@ using System.Speech.Synthesis;
 using System.Collections;
 using System.Diagnostics;
 using SubtitleDubber.Validators;
+using System.Reflection;
 
 namespace SubtitleDubber.Services
 {
@@ -30,8 +31,7 @@ namespace SubtitleDubber.Services
 
         public void Dub(int subtitleTrackId, string inputVideoFileName, string outputVideoFileName, bool useSox, int delay, int originalTrackVolume, IProgress<string> progress)
         {
-            _tempDirectoryName = "C:\\hardas\\subtitleDubber";
-//            _tempDirectoryName = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            _tempDirectoryName = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             _fileUtils.CreateDirectory(_tempDirectoryName);
             var inputSubtitleFileName = Path.Combine(_tempDirectoryName, TemporarySubtitleFileName);
             _subtitleService.DownloadSubtitle(inputVideoFileName, inputSubtitleFileName, FileFormat.DefaultSubtitleFileExtension, subtitleTrackId);
@@ -65,9 +65,10 @@ namespace SubtitleDubber.Services
             {
                 GenerateAudioTrackFromBuilder(progress);
             }
-                var executor = new CommandExecutor();
-                var inputAudioFileName = Path.Combine(_tempDirectoryName, FinalFileNameStart + WaveFileExtension);
-                executor.ExecuteMergeAudioCommand(inputVideoFileName, inputAudioFileName, outputVideoFileName, delay, originalTrackVolume);
+
+            var inputAudioFileName = Path.Combine(_tempDirectoryName, FinalFileNameStart + WaveFileExtension);
+            MergeAudioTracks(inputVideoFileName, inputAudioFileName, outputVideoFileName, delay, originalTrackVolume, progress);
+
                         _fileUtils.RemoveFiles(_tempFiles);
             _fileUtils.RemoveDirectory(_tempDirectoryName);
             _tempFiles.Clear();
@@ -285,5 +286,88 @@ for (var i=1; i<_silences.Length; ++i)
             }
         }
 
+        private void MergeAudioTracks(string inputVideoFileName, string inputAudioFileName, string outputVideoFileName, int delay, int originalTrackVolume, IProgress<string> progress)
+        {
+            var executor = new CommandExecutor();
+            var mergeActivityText = "Merging audio tracks...";
+
+            int audioDuration = -1, videoDuration = -1, longerDuration = -1;
+                        var process = executor.ExecuteMergeAudioCommand(inputVideoFileName, inputAudioFileName, outputVideoFileName, delay, originalTrackVolume);
+            ReportProgress(progress, 0, mergeActivityText);
+
+            process.ErrorDataReceived += new DataReceivedEventHandler((sender, e) =>
+            {
+                if (!String.IsNullOrEmpty(e.Data))
+                {
+                    var outputParts = e.Data.Split(" ");
+                    if ( e.Data.Trim().StartsWith("Duration:"))
+                    {
+                        if (outputParts.Length > 1)
+                    {
+                            var index = 1;
+                        while ((string.IsNullOrEmpty(outputParts[index]) || outputParts[index] == "Duration:") && index < outputParts.Length)
+                        {
+                            ++index;
+                        }
+                            if (videoDuration == -1)
+                            {
+                                videoDuration = ParseTime(outputParts[index]);
+                            }
+                            else
+                            {
+                                audioDuration = ParseTime(outputParts[index]);
+                                }
+                            if (audioDuration > videoDuration)
+                            {
+                                longerDuration = audioDuration;
+                            }
+                            else
+                            {
+                                longerDuration = videoDuration;
+                            }
+                            longerDuration += delay / 1000 + 1;
+                        }
+                    }
+else if (outputParts[0].StartsWith ("frame="))
+                    {
+                        var index = 1;
+                        while (!outputParts[index].StartsWith("time=") && index < outputParts.Length)
+                        {
+                            ++index;
+                        }
+       var seconds = ParseTime(outputParts[index].Replace("time=", ""));
+                        ReportProgress(progress, seconds* 100 / longerDuration, mergeActivityText);
+                    }
+
+                }
+
+                }
+            );
+
+            process.Start();
+            process.BeginErrorReadLine();
+            process.WaitForExit();
+            process.Dispose();
+            ReportProgress(progress, 100, mergeActivityText);
+        }
+
+        private int ParseTime(string time)
+    {
+    var totalSeconds = 0;
+    var timeParts = time.Replace(".", ":").Split(":");
+    if (timeParts.Length > 3)
+    {
+        int hours = 0, minutes = 0, seconds = 0;
+        int.TryParse(timeParts[0], out hours);
+        int.TryParse(timeParts[1], out minutes);
+        int.TryParse(timeParts[2], out seconds);
+if (hours>=0)
+                {
+                    totalSeconds = hours * 60 * 60 + minutes * 60 + seconds;
+                }
+            }
+
+    return totalSeconds;
+    }
     }
 }

@@ -12,31 +12,37 @@ namespace SubtitleDubber.Utils
     {
         private const char CSVDelimiter = ',';
 
-        public string Execute(Command command)
+        private Process InitiateExecution(Command command)
         {
             command.InitializeArguments();
-            using (Process p = new Process())
-            {
-                p.StartInfo.UseShellExecute = false;
-                p.StartInfo.CreateNoWindow = true;
-                p.StartInfo.FileName = command.Executable;
-                p.StartInfo.Arguments = ConvertToArgumentString(command.Arguments);
+            var process = new Process();
+                process.StartInfo.UseShellExecute = false;
+                process.StartInfo.CreateNoWindow = true;
+                process.StartInfo.FileName = command.Executable;
+                process.StartInfo.Arguments = ConvertToArgumentString(command.Arguments);
 if (!string.IsNullOrEmpty(command.WorkingDirectory))
                 {
-                    p.StartInfo.WorkingDirectory = command.WorkingDirectory;
+                    process.StartInfo.WorkingDirectory = command.WorkingDirectory;
                                     }
-                p.StartInfo.RedirectStandardOutput = true;
 
-                p.Start();
-                p.WaitForExit();
-                var output = p.StandardOutput.ReadToEnd();
-                return output;
-            }
+            return process;
         }
 
         private string ConvertToArgumentString(List<String> arguments)
         {
             return string.Join(" ", arguments);
+        }
+
+        public string Execute(Command command)
+        {
+            var process = InitiateExecution(command);
+            process.StartInfo.RedirectStandardOutput = true;
+            process.Start();
+            process.WaitForExit();
+            var output = process.StandardOutput.ReadToEnd();
+            process.Dispose();
+
+            return output;
         }
 
         public void ExecuteSilenceCommand(string inputFileName, string outputFileName, long msAtStart, long msAtEnd)
@@ -101,7 +107,7 @@ if (parsedResult)
             Execute(concatCommand);
                     }
 
-public void ExecuteMergeAudioCommand(string inputVideoFileName, string inputAudioFileName, string outputVideoFileName, int dubbingAudioDelay, int originalAudioVolume)
+public Process ExecuteMergeAudioCommand(string inputVideoFileName, string inputAudioFileName, string outputVideoFileName, int dubbingAudioDelay, int originalAudioVolume)
         {
             var command = new MergeAudioCommand();
             command.InputVideoFileName = inputVideoFileName;
@@ -109,7 +115,10 @@ public void ExecuteMergeAudioCommand(string inputVideoFileName, string inputAudi
             command.OutputVideoFileName = outputVideoFileName;
             command.DubbingAudioDelay = dubbingAudioDelay;
             command.OriginalAudioVolume = originalAudioVolume;
-            Execute(command);
+            var process = InitiateExecution(command);
+            process.StartInfo.RedirectStandardError = true;
+            return process;
         }
+
     }
 }
