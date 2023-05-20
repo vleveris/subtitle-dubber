@@ -3,7 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.2.32630.192
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SubtitleDubber", "SubtitleDubber\SubtitleDubber.csproj", "{F28DCBCC-89F2-4641-8CDE-2B5224394A4E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SubtitleDubber", "SubtitleDubber\SubtitleDubber.csproj", "{F28DCBCC-89F2-4641-8CDE-2B5224394A4E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SubtitleDubberApp", "SubtitleDubberApp\SubtitleDubberApp.csproj", "{843EF5F3-8F89-4CEB-8154-C39D4F0BCFBD}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Web", "Web\Web.csproj", "{EA0EFD11-0E56-4D77-84FC-815CD195D013}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +19,14 @@ Global
 		{F28DCBCC-89F2-4641-8CDE-2B5224394A4E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F28DCBCC-89F2-4641-8CDE-2B5224394A4E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F28DCBCC-89F2-4641-8CDE-2B5224394A4E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{843EF5F3-8F89-4CEB-8154-C39D4F0BCFBD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{843EF5F3-8F89-4CEB-8154-C39D4F0BCFBD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{843EF5F3-8F89-4CEB-8154-C39D4F0BCFBD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{843EF5F3-8F89-4CEB-8154-C39D4F0BCFBD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EA0EFD11-0E56-4D77-84FC-815CD195D013}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA0EFD11-0E56-4D77-84FC-815CD195D013}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EA0EFD11-0E56-4D77-84FC-815CD195D013}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EA0EFD11-0E56-4D77-84FC-815CD195D013}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -25,7 +25,7 @@ namespace SubtitleDubber.Models
 
             if (!IsValidStartAndEnd(start, end))
             {
-                throw new ArgumentException("Start time was after end time.");
+                throw new ArgumentException("Start time is after end time.");
             }
             Start = start;
             End = end;
@@ -35,7 +35,7 @@ namespace SubtitleDubber.Models
         {
             if (!IsValidStartAndEnd(start, end))
             {
-                throw new ArgumentException("Start time was after end time.");
+                throw new ArgumentException("Start time is after end time.");
             }
             Start = start;
             End = end;

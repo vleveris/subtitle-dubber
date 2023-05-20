@@ -1,8 +1,10 @@
 ﻿using System;
 using SubtitleDubber.Helpers;
+using SubtitleDubber.Exceptions;
+
 namespace SubtitleDubber.Models
 {
-    public class SubtitleItem
+    public class SubtitleItem : IComparable
     {
         private const string NewLine = "\r\n";
 
@@ -35,6 +37,10 @@ namespace SubtitleDubber.Models
             set => _text = value == null ? string.Empty : value.Trim();
         }
 
+public SubtitleItem()
+        {
+                    }
+
         public SubtitleItem(int index, SubtitleDuration duration, string text)
         {
             Index = index;
@@ -58,10 +64,9 @@ namespace SubtitleDubber.Models
             }
             catch (Exception ex)
             {
-//                throw new SubRipException("Invalid SubRip item string representation.", ex);
+                throw new SubtitleException("Invalid subtitle item representation.", ex);
             }
         }
-
 
                 public override string ToString()
                 {
@@ -74,6 +79,17 @@ namespace SubtitleDubber.Models
                 {
                     return (_index + Text).GetHashCode();
                 }
+
+        #region IComparable Members
+
+        public int CompareTo(object obj)
+        {
+            var subtitle = (SubtitleItem)obj;
+
+            return _index.CompareTo(subtitle._index);
+        }
+
+        #endregion
 
     }
 }

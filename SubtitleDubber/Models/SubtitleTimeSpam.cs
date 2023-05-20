@@ -70,16 +70,16 @@ namespace SubtitleDubber.Models
 
         public SubtitleTimeSpan Add(SubtitleTimeSpan subtitleTimeSpan)
         {
-            var ts = ConvertSrtTimeSpanToTimeSpan(subtitleTimeSpan);
+            var ts = ConvertSubtitleTimeSpanToTimeSpan(subtitleTimeSpan);
 
             ts = _timeSpan.Add(ts);
 
-            return ConvertTimeSpanToSrtTimeSpan(ts);
+            return ConvertTimeSpanToSubtitleTimeSpan(ts);
         }
 
         public SubtitleTimeSpan Subtract(SubtitleTimeSpan subtitleTimeSpan)
         {
-            var ts = ConvertSrtTimeSpanToTimeSpan(subtitleTimeSpan);
+            var ts = ConvertSubtitleTimeSpanToTimeSpan(subtitleTimeSpan);
 
             ts = _timeSpan.Subtract(ts);
 
@@ -88,7 +88,7 @@ namespace SubtitleDubber.Models
                 return new SubtitleTimeSpan(0, 0, 0, 0);
             }
 
-            return ConvertTimeSpanToSrtTimeSpan(ts);
+            return ConvertTimeSpanToSubtitleTimeSpan(ts);
         }
 
         public override string ToString()
@@ -179,12 +179,12 @@ namespace SubtitleDubber.Models
             return int.Parse(ts.Substring(9, 3));
         }
 
-        private static TimeSpan ConvertSrtTimeSpanToTimeSpan(SubtitleTimeSpan subtitleTimeSpan)
+        public static TimeSpan ConvertSubtitleTimeSpanToTimeSpan(SubtitleTimeSpan subtitleTimeSpan)
         {
             return new TimeSpan(0, subtitleTimeSpan.Hours, subtitleTimeSpan.Minutes, subtitleTimeSpan.Seconds, subtitleTimeSpan.Milliseconds);
         }
 
-        private static SubtitleTimeSpan ConvertTimeSpanToSrtTimeSpan(TimeSpan timeSpan)
+        public static SubtitleTimeSpan ConvertTimeSpanToSubtitleTimeSpan(TimeSpan timeSpan)
         {
             return new SubtitleTimeSpan(timeSpan.Hours, timeSpan.Minutes, timeSpan.Seconds, timeSpan.Milliseconds);
         }
