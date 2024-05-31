@@ -169,11 +169,7 @@ private void DubSubtitle(SubtitleItem currentSubtitle, SubtitleItem nextSubtitle
             if (overlap > 0)
             {
                 var silenceCutValue = IncreaseSubtitleSpeechDuration(_silences[subtitleIndex - 1], overlap);
-                if (silenceCutValue == 0)
-                {
-
-                }
-                else
+                if (silenceCutValue > 0)
                 {
                     subtitleSpeechDuration += silenceCutValue;
                     _silences[subtitleIndex - 1] -= silenceCutValue;
@@ -264,7 +260,9 @@ for (var i=1; i<_silences.Length; ++i)
                 builder.AppendAudio(Path.Combine(_tempDirectoryName, i.ToString()));
                 AppendSilence(_silences[i], builder);
             }
-            _speechService.Speak(builder, Path.Combine(_tempDirectoryName, FinalFileNameStart + WaveFileExtension));
+            var outputFileName = Path.Combine(_tempDirectoryName, FinalFileNameStart + WaveFileExtension);
+            _speechService.Speak(builder, outputFileName);
+            _tempFiles.Add(outputFileName);
                 ReportProgress(progress, 100, progressString);
         }
 
